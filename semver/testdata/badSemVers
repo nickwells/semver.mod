@@ -1,0 +1,27 @@
+1.2.3-x+y			missing leading v
+V1.2.3-x+y			leading char is not a lowercase v
+
+v1.2				does not have 3 version numbers
+
+v.2.3				empty major version number
+v1..3				empty minor version number
+v1.2.				empty patch version number
+
+v01.2.3				bad major version number - has a leading 0
+v1.02.3				bad minor version number - has a leading 0
+v1.2.03				bad patch version number - has a leading 0
+
+v1.2.3-				bad pre-release IDs - is an empty string
+v1.2.3-$			bad pre-release IDs - bad char
+v1.2.3-a.b$			bad pre-release IDs - bad char
+v1.2.3-a.01			bad pre-release IDs - bad number - leading zero
+v1.2.3-.a.b			bad pre-release IDs - has an empty entry at the start
+v1.2.3-a..b			bad pre-release IDs - has an empty entry in the middle
+v1.2.3-a.b.			bad pre-release IDs - has an empty entry at the end
+
+v1.2.3+				bad build IDs - is an empty string
+v1.2.3+$			bad build IDs - bad char
+v1.2.3+a.b$			bad build IDs - bad char
+v1.2.3+.a.b			bad build IDs - has an empty entry at the start
+v1.2.3+a..b			bad build IDs - has an empty entry in the middle
+v1.2.3+a.b.			bad build IDs - has an empty entry at the end
