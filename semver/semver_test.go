@@ -113,7 +113,7 @@ func TestNewSV(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		tcID := fmt.Sprintf("test %d: %s :", i, tc.name)
+		tcID := fmt.Sprintf("test %d: %s", i, tc.name)
 		sv, err := semver.NewSV(tc.major, tc.minor, tc.patch, tc.prIDs, tc.bIDs)
 		testhelper.CheckError(t, tcID, err, tc.errExpected, tc.errMustContain)
 		if err == nil && !tc.errExpected {
@@ -301,7 +301,7 @@ func TestParse(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		tcID := fmt.Sprintf("test %d: %s :", i, tc.name)
+		tcID := fmt.Sprintf("test %d: %s", i, tc.name)
 		sv, err := semver.ParseSV(tc.svStr)
 		testhelper.CheckError(t, tcID, err, tc.errExpected, tc.errMustContain)
 		if err == nil && !tc.errExpected {
@@ -361,7 +361,7 @@ func TestIncr(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		tcID := fmt.Sprintf("test %d: %s :", i, tc.name)
+		tcID := fmt.Sprintf("test %d: %s", i, tc.name)
 
 		localSV := new(semver.SV)
 		sv.CopyInto(localSV)

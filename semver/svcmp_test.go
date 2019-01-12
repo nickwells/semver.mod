@@ -171,7 +171,7 @@ func TestLess(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		tcID := fmt.Sprintf("test %d: %s :", i, tc.name)
+		tcID := fmt.Sprintf("test %d: %s", i, tc.name)
 		isLess := semver.Less(tc.a, tc.b)
 		if isLess != tc.shouldBeLess {
 			t.Log(tcID)
@@ -224,7 +224,7 @@ func TestEquals(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		tcID := fmt.Sprintf("test %d: %s :", i, tc.name)
+		tcID := fmt.Sprintf("test %d: %s", i, tc.name)
 
 		if semver.Equals(&tc.sv1, &tc.sv2) {
 			if tc.expEqual {
