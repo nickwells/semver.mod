@@ -241,7 +241,7 @@ func TestParse(t *testing.T) {
 			errExpected: true,
 			errMustContain: []string{
 				"Bad SemVer string: '",
-				"' - cannot split into major/minor/patch parts",
+				"' - it cannot be split into major/minor/patch parts",
 			},
 		},
 		{

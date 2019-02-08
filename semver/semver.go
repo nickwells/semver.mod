@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/nickwells/check.mod/check"
 )
 
 var idRE *regexp.Regexp
@@ -57,20 +59,22 @@ func CheckPreRelID(id string) error {
 	return nil
 }
 
-// CheckAllPreRelIDs will return an error if any of the PreRelIDs is not valid
-func CheckAllPreRelIDs(buildIDs []string) error {
-	for _, buildID := range buildIDs {
-		if err := CheckPreRelID(buildID); err != nil {
+// CheckAllPreRelIDs will return an error if any of the ids is not valid
+// according to the rules for pre-release IDs
+func CheckAllPreRelIDs(ids []string) error {
+	for _, id := range ids {
+		if err := CheckPreRelID(id); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-// CheckAllBuildIDs will return an error if any of the BuildIDs is not valid
-func CheckAllBuildIDs(buildIDs []string) error {
-	for _, buildID := range buildIDs {
-		if err := CheckBuildID(buildID); err != nil {
+// CheckAllBuildIDs will return an error if any of the ids is not valid
+// according to the rules for build IDs
+func CheckAllBuildIDs(ids []string) error {
+	for _, id := range ids {
+		if err := CheckBuildID(id); err != nil {
 			return err
 		}
 	}
@@ -122,6 +126,48 @@ func NewSV(major, minor, patch int, prIDs, buildIDs []string) (*SV, error) {
 	return sv, nil
 }
 
+// CheckRules will confirm that all the checks are satisfied by the slice of
+// IDs and return an error if not.
+func CheckRules(ids []string, checks []check.StringSlice) error {
+	for _, chk := range checks {
+		err := chk(ids)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// NewSVWithIDRules returns a pointer to a properly constructed SV or an
+// error if the IDs are not well-formed. As well as the standard checks it
+// will also run the additional checks on the IDs and return an error if any
+// of them fail. This allows you to enforce rules for the pre-release IDs and
+// the build IDs. For instance you could prevent any semvers from having
+// build IDs by passing a check the that slice of strings is empty.
+func NewSVWithIDRules(major, minor, patch int,
+	prIDs, buildIDs []string,
+	prIDRules, bIDRules []check.StringSlice) (*SV, error) {
+	sv := &SV{
+		Major:     major,
+		Minor:     minor,
+		Patch:     patch,
+		PreRelIDs: prIDs,
+		BuildIDs:  buildIDs,
+	}
+
+	if err := sv.Check(); err != nil {
+		return nil, err
+	}
+	if err := CheckRules(prIDs, prIDRules); err != nil {
+		return nil, err
+	}
+	if err := CheckRules(buildIDs, bIDRules); err != nil {
+		return nil, err
+	}
+
+	return sv, nil
+}
+
 // ParseSV will parse the semver string into an SV object. It will return a
 // pointer to a properly constructed SV and a nil error if the semver is
 // well-formed or a nil pointer and an error otherwise
@@ -160,7 +206,7 @@ func ParseSV(semver string) (*SV, error) {
 	if len(parts) != 3 {
 		return nil,
 			fmt.Errorf("Bad SemVer string: '%s' -"+
-				" cannot split into major/minor/patch parts",
+				" it cannot be split into major/minor/patch parts",
 				semver)
 	}
 
