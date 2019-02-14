@@ -276,6 +276,8 @@ func (sv *SV) IncrMajor() {
 	sv.Patch = 0
 	sv.ClearPreRelIDs()
 }
+
+// IncrMajor calls the IncrMajor method on the passed SV
 func IncrMajor(sv *SV) {
 	sv.IncrMajor()
 }
@@ -287,6 +289,8 @@ func (sv *SV) IncrMinor() {
 	sv.Patch = 0
 	sv.ClearPreRelIDs()
 }
+
+// IncrMinor calls the IncrMinor method on the passed SV
 func IncrMinor(sv *SV) {
 	sv.IncrMinor()
 }
@@ -297,6 +301,8 @@ func (sv *SV) IncrPatch() {
 	sv.Patch++
 	sv.ClearPreRelIDs()
 }
+
+// IncrPatch calls the IncrPatch method on the passed SV
 func IncrPatch(sv *SV) {
 	sv.IncrPatch()
 }

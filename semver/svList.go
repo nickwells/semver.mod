@@ -1,5 +1,7 @@
 package semver
 
+// SVList represents a slice of semvers. It provides the base from which to
+// hang the sorting methods
 type SVList []*SV
 
 // Less reports whether the element with index i should sort before the
