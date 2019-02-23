@@ -2,31 +2,8 @@ package semver
 
 import "strconv"
 
-// Less returns true if a is less than b according to the ordering rules for
-// semantic versions given in the Semantic Versioning Specification v2.0.0
-// (spec item 11)
-func Less(a, b *SV) bool {
-	if a.Major < b.Major {
-		return true
-	}
-	if a.Major > b.Major {
-		return false
-	}
-
-	if a.Minor < b.Minor {
-		return true
-	}
-	if a.Minor > b.Minor {
-		return false
-	}
-
-	if a.Patch < b.Patch {
-		return true
-	}
-	if a.Patch > b.Patch {
-		return false
-	}
-
+// lessPRIDs compares the PreRelIDs of the two semver values
+func lessPRIDs(a, b *SV) bool {
 	if len(a.PreRelIDs) > 0 && len(b.PreRelIDs) == 0 {
 		return true
 	}
@@ -60,10 +37,36 @@ func Less(a, b *SV) bool {
 			return false
 		}
 	}
-	if len(a.PreRelIDs) < len(b.PreRelIDs) {
+
+	return len(a.PreRelIDs) < len(b.PreRelIDs)
+}
+
+// Less returns true if a is less than b according to the ordering rules for
+// semantic versions given in the Semantic Versioning Specification v2.0.0
+// (spec item 11)
+func Less(a, b *SV) bool {
+	if a.Major < b.Major {
 		return true
 	}
-	return false
+	if a.Major > b.Major {
+		return false
+	}
+
+	if a.Minor < b.Minor {
+		return true
+	}
+	if a.Minor > b.Minor {
+		return false
+	}
+
+	if a.Patch < b.Patch {
+		return true
+	}
+	if a.Patch > b.Patch {
+		return false
+	}
+
+	return lessPRIDs(a, b)
 }
 
 // Equals compares the two SemVers and returns true if they are identical,
