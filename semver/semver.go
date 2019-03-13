@@ -10,6 +10,12 @@ import (
 	"github.com/nickwells/check.mod/check"
 )
 
+const (
+	Name           = "semantic version ID"
+	GoodIDDesc     = "a non-empty string of letters, digits or hyphens"
+	GoodVsnNumDesc = "greater than or equal to zero"
+)
+
 var idRE *regexp.Regexp
 var numericOnlyRE *regexp.Regexp
 var goodNumericRE *regexp.Regexp
@@ -33,9 +39,7 @@ type SV struct {
 // for a build ID, an error otherwise
 func CheckBuildID(id string) error {
 	if !idRE.MatchString(id) {
-		return errors.New(
-			"Bad Build ID: '" + id +
-				"' - must be a non-empty string of letters, digits or hyphens")
+		return errors.New("the Build ID: '" + id + "' must be " + GoodIDDesc)
 	}
 	return nil
 }
@@ -45,16 +49,13 @@ func CheckBuildID(id string) error {
 func CheckPreRelID(id string) error {
 	if numericOnlyRE.MatchString(id) {
 		if !goodNumericRE.MatchString(id) {
-			return errors.New(
-				"Bad Pre-Rel ID: '" + id +
-					"' - if it's all numeric there must be no leading 0")
+			return errors.New("the Pre-Rel ID: '" + id +
+				"' must have no leading zero if it's all numeric")
 		}
 		return nil
 	}
 	if !idRE.MatchString(id) {
-		return errors.New(
-			"Bad Pre-Rel ID: '" + id +
-				"' - must be a non-empty string of letters, digits or hyphens")
+		return errors.New("the Pre-Rel ID: '" + id + "' must be " + GoodIDDesc)
 	}
 	return nil
 }
@@ -91,18 +92,18 @@ func (sv SV) Check() error {
 	}
 
 	if sv.Major < 0 {
-		return fmt.Errorf("bad major version: %d - it must be greater than 0",
-			sv.Major)
+		return fmt.Errorf("bad major version: %d - it must be %s",
+			sv.Major, GoodVsnNumDesc)
 	}
 
 	if sv.Minor < 0 {
-		return fmt.Errorf("bad minor version: %d - it must be greater than 0",
-			sv.Minor)
+		return fmt.Errorf("bad minor version: %d - it must be %s",
+			sv.Minor, GoodVsnNumDesc)
 	}
 
 	if sv.Patch < 0 {
-		return fmt.Errorf("bad patch version: %d - it must be greater than 0",
-			sv.Patch)
+		return fmt.Errorf("bad patch version: %d - it must be %s",
+			sv.Patch, GoodVsnNumDesc)
 	}
 
 	return nil
@@ -177,8 +178,7 @@ func ParseSV(semver string) (*SV, error) {
 	s := strings.TrimPrefix(semver, "v")
 	if s == semver {
 		return nil,
-			fmt.Errorf("Bad SemVer string: '%s' - it does not start with a 'v'",
-				semver)
+			fmt.Errorf("bad %s - it does not start with a 'v'", Name)
 	}
 	var err error
 
@@ -187,8 +187,7 @@ func ParseSV(semver string) (*SV, error) {
 		s = parts[0]
 		sv.BuildIDs = strings.Split(parts[1], ".")
 		if err = CheckAllBuildIDs(sv.BuildIDs); err != nil {
-			return nil,
-				fmt.Errorf("Bad SemVer string: '%s' - %s", semver, err)
+			return nil, fmt.Errorf("bad %s - %s", Name, err)
 		}
 	}
 
@@ -197,30 +196,29 @@ func ParseSV(semver string) (*SV, error) {
 		s = parts[0]
 		sv.PreRelIDs = strings.Split(parts[1], ".")
 		if err = CheckAllPreRelIDs(sv.PreRelIDs); err != nil {
-			return nil,
-				fmt.Errorf("Bad SemVer string: '%s' - %s", semver, err)
+			return nil, fmt.Errorf("bad %s - %s", Name, err)
 		}
 	}
 
 	parts = strings.SplitN(s, ".", 3)
 	if len(parts) != 3 {
 		return nil,
-			fmt.Errorf("Bad SemVer string: '%s' -"+
-				" it cannot be split into major/minor/patch parts",
-				semver)
+			fmt.Errorf("bad %s"+
+				" - it cannot be split into major/minor/patch parts",
+				Name)
 	}
 
 	sv.Major, err = strToVNum(parts[0], "major")
 	if err != nil {
-		return nil, fmt.Errorf("Bad SemVer string: '%s' - %s", semver, err)
+		return nil, fmt.Errorf("bad %s - %s", Name, err)
 	}
 	sv.Minor, err = strToVNum(parts[1], "minor")
 	if err != nil {
-		return nil, fmt.Errorf("Bad SemVer string: '%s' - %s", semver, err)
+		return nil, fmt.Errorf("bad %s - %s", Name, err)
 	}
 	sv.Patch, err = strToVNum(parts[2], "patch")
 	if err != nil {
-		return nil, fmt.Errorf("Bad SemVer string: '%s' - %s", semver, err)
+		return nil, fmt.Errorf("bad %s - %s", Name, err)
 	}
 
 	return &sv, nil
@@ -230,14 +228,15 @@ func ParseSV(semver string) (*SV, error) {
 // it finds
 func strToVNum(s, name string) (int, error) {
 	if len(s) > 1 && s[0] == '0' {
-		return 0, fmt.Errorf("bad %s version: %s - it has a leading 0", name, s)
+		return 0, fmt.Errorf("the %s version: '%s' has a leading 0", name, s)
 	}
 	i, err := strconv.Atoi(s)
 	if err != nil {
-		return 0, fmt.Errorf("bad %s version: %s - it is not a number", name, s)
+		return 0, fmt.Errorf("the %s version: '%s' is not a number", name, s)
 	}
 	if i < 0 {
-		return 0, fmt.Errorf("bad %s version: %s - it must be >= 0", name, s)
+		return 0, fmt.Errorf("the %s version: '%s' must be %s",
+			name, s, GoodVsnNumDesc)
 	}
 	return i, nil
 }

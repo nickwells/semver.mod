@@ -51,20 +51,20 @@ func TestNewSV(t *testing.T) {
 			expSVString: "v1.2.3+yyy.YYY",
 		},
 		{
-			name:        "good - v1.2.3-xxx.XXX+yyy.YYY",
+			name:        "good - v1.2.3-xxx.X-XX+yyy.YYY",
 			major:       1,
 			minor:       2,
 			patch:       3,
-			prIDs:       []string{"xxx", "XXX"},
+			prIDs:       []string{"xxx", "X-XX"},
 			bIDs:        []string{"yyy", "YYY"},
-			expSVString: "v1.2.3-xxx.XXX+yyy.YYY",
+			expSVString: "v1.2.3-xxx.X-XX+yyy.YYY",
 		},
 		{
 			name:        "bad - major version < 0",
 			major:       -1,
 			errExpected: true,
 			errMustContain: []string{
-				"bad major version: -1 - it must be greater than 0",
+				"bad major version: -1 - it must be " + semver.GoodVsnNumDesc,
 			},
 		},
 		{
@@ -72,7 +72,7 @@ func TestNewSV(t *testing.T) {
 			minor:       -1,
 			errExpected: true,
 			errMustContain: []string{
-				"bad minor version: -1 - it must be greater than 0",
+				"bad minor version: -1 - it must be " + semver.GoodVsnNumDesc,
 			},
 		},
 		{
@@ -80,7 +80,7 @@ func TestNewSV(t *testing.T) {
 			patch:       -1,
 			errExpected: true,
 			errMustContain: []string{
-				"bad patch version: -1 - it must be greater than 0",
+				"bad patch version: -1 - it must be " + semver.GoodVsnNumDesc,
 			},
 		},
 		{
@@ -88,8 +88,7 @@ func TestNewSV(t *testing.T) {
 			prIDs:       []string{"aaa", "a$a", "bbb"},
 			errExpected: true,
 			errMustContain: []string{
-				"Bad Pre-Rel ID: 'a$a' - ",
-				"must be a non-empty string of letters, digits or hyphens",
+				"the Pre-Rel ID: 'a$a' must be " + semver.GoodIDDesc,
 			},
 		},
 		{
@@ -97,17 +96,16 @@ func TestNewSV(t *testing.T) {
 			prIDs:       []string{"0", "012", "bbb"},
 			errExpected: true,
 			errMustContain: []string{
-				"Bad Pre-Rel ID: '012' - ",
-				"if it's all numeric there must be no leading 0",
+				"the Pre-Rel ID: '012' " +
+					"must have no leading zero if it's all numeric",
 			},
 		},
 		{
-			name:        "bad - invalid build ID",
+			name:        "bad - invalid build ID - non alphanumeric or '-'",
 			bIDs:        []string{"aaa", "a$a", "bbb"},
 			errExpected: true,
 			errMustContain: []string{
-				"Bad Build ID: 'a$a' - ",
-				"must be a non-empty string of letters, digits or hyphens",
+				"the Build ID: 'a$a' must be " + semver.GoodIDDesc,
 			},
 		},
 	}
@@ -128,6 +126,7 @@ func TestNewSV(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
+	const badSemVer = "bad " + semver.Name
 	testCases := []struct {
 		name           string
 		svStr          string
@@ -181,8 +180,7 @@ func TestParse(t *testing.T) {
 			svStr:       "1.2.3-xxx+yyy",
 			errExpected: true,
 			errMustContain: []string{
-				"Bad SemVer string: '",
-				"' - it does not start with a 'v'",
+				badSemVer + " - it does not start with a 'v'",
 			},
 		},
 		{
@@ -190,9 +188,8 @@ func TestParse(t *testing.T) {
 			svStr:       "v1.2.3-x$xx+yyy",
 			errExpected: true,
 			errMustContain: []string{
-				"Bad SemVer string: '",
-				"' - Bad Pre-Rel ID: ",
-				"must be a non-empty string of letters, digits or hyphens",
+				badSemVer + " - the Pre-Rel ID: 'x$xx' must be " +
+					semver.GoodIDDesc,
 			},
 		},
 		{
@@ -200,9 +197,8 @@ func TestParse(t *testing.T) {
 			svStr:       "v1.2.3-012+yyy",
 			errExpected: true,
 			errMustContain: []string{
-				"Bad SemVer string: '",
-				"' - Bad Pre-Rel ID: ",
-				"if it's all numeric there must be no leading 0",
+				badSemVer + " - the Pre-Rel ID: '012'",
+				"must have no leading zero if it's all numeric",
 			},
 		},
 		{
@@ -210,9 +206,8 @@ func TestParse(t *testing.T) {
 			svStr:       "v1.2.3-a..b+yyy",
 			errExpected: true,
 			errMustContain: []string{
-				"Bad SemVer string: '",
-				"' - Bad Pre-Rel ID: ",
-				"must be a non-empty string of letters, digits or hyphens",
+				badSemVer + " - the Pre-Rel ID: '' must be " +
+					semver.GoodIDDesc,
 			},
 		},
 		{
@@ -220,9 +215,8 @@ func TestParse(t *testing.T) {
 			svStr:       "v1.2.3-xxx+y$yy",
 			errExpected: true,
 			errMustContain: []string{
-				"Bad SemVer string: '",
-				"' - Bad Build ID: ",
-				"must be a non-empty string of letters, digits or hyphens",
+				badSemVer + " - the Build ID: 'y$yy' must be " +
+					semver.GoodIDDesc,
 			},
 		},
 		{
@@ -230,9 +224,7 @@ func TestParse(t *testing.T) {
 			svStr:       "v1.2.3-xxx+",
 			errExpected: true,
 			errMustContain: []string{
-				"Bad SemVer string: '",
-				"' - Bad Build ID: ",
-				"must be a non-empty string of letters, digits or hyphens",
+				badSemVer + " - the Build ID: '' must be " + semver.GoodIDDesc,
 			},
 		},
 		{
@@ -240,8 +232,7 @@ func TestParse(t *testing.T) {
 			svStr:       "v1.2",
 			errExpected: true,
 			errMustContain: []string{
-				"Bad SemVer string: '",
-				"' - it cannot be split into major/minor/patch parts",
+				badSemVer + " - it cannot be split into major/minor/patch parts",
 			},
 		},
 		{
@@ -249,8 +240,7 @@ func TestParse(t *testing.T) {
 			svStr:       "vX.2.3",
 			errExpected: true,
 			errMustContain: []string{
-				"Bad SemVer string: '",
-				"' - bad major version: X - it is not a number",
+				badSemVer + " - the major version: 'X' is not a number",
 			},
 		},
 		{
@@ -258,8 +248,7 @@ func TestParse(t *testing.T) {
 			svStr:       "v01.2.3",
 			errExpected: true,
 			errMustContain: []string{
-				"Bad SemVer string: '",
-				"' - bad major version: 01 - it has a leading 0",
+				badSemVer + " - the major version: '01' has a leading 0",
 			},
 		},
 		{
@@ -267,8 +256,7 @@ func TestParse(t *testing.T) {
 			svStr:       "v1.X.3",
 			errExpected: true,
 			errMustContain: []string{
-				"Bad SemVer string: '",
-				"' - bad minor version: X - it is not a number",
+				badSemVer + " - the minor version: 'X' is not a number",
 			},
 		},
 		{
@@ -276,8 +264,7 @@ func TestParse(t *testing.T) {
 			svStr:       "v1.02.3",
 			errExpected: true,
 			errMustContain: []string{
-				"Bad SemVer string: '",
-				"' - bad minor version: 02 - it has a leading 0",
+				badSemVer + " - the minor version: '02' has a leading 0",
 			},
 		},
 		{
@@ -285,8 +272,7 @@ func TestParse(t *testing.T) {
 			svStr:       "v1.2.X",
 			errExpected: true,
 			errMustContain: []string{
-				"Bad SemVer string: '",
-				"' - bad patch version: X - it is not a number",
+				badSemVer + " - the patch version: 'X' is not a number",
 			},
 		},
 		{
@@ -294,8 +280,7 @@ func TestParse(t *testing.T) {
 			svStr:       "v1.2.03",
 			errExpected: true,
 			errMustContain: []string{
-				"Bad SemVer string: '",
-				"' - bad patch version: 03 - it has a leading 0",
+				badSemVer + " - the patch version: '03' has a leading 0",
 			},
 		},
 	}
