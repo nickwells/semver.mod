@@ -12,6 +12,7 @@ import (
 
 const (
 	Name           = "semantic version ID"
+	Names          = "semantic version IDs"
 	GoodIDDesc     = "a non-empty string of letters, digits or hyphens"
 	GoodVsnNumDesc = "greater than or equal to zero"
 )
