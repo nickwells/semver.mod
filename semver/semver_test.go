@@ -2,7 +2,6 @@ package semver_test
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -13,29 +12,28 @@ import (
 
 func TestNewSV(t *testing.T) {
 	testCases := []struct {
-		name           string
-		major          int
-		minor          int
-		patch          int
-		prIDs          []string
-		bIDs           []string
-		errExpected    bool
-		errMustContain []string
-		expSVString    string
+		testhelper.ID
+		testhelper.ExpErr
+		major       int
+		minor       int
+		patch       int
+		prIDs       []string
+		bIDs        []string
+		expSVString string
 	}{
 		{
-			name:        "good - nil version",
+			ID:          testhelper.MkID("good - nil version"),
 			expSVString: "v0.0.0",
 		},
 		{
-			name:        "good - v1.2.3",
+			ID:          testhelper.MkID("good - v1.2.3"),
 			major:       1,
 			minor:       2,
 			patch:       3,
 			expSVString: "v1.2.3",
 		},
 		{
-			name:        "good - v1.2.3-xxx.XXX",
+			ID:          testhelper.MkID("good - v1.2.3-xxx.XXX"),
 			major:       1,
 			minor:       2,
 			patch:       3,
@@ -43,7 +41,7 @@ func TestNewSV(t *testing.T) {
 			expSVString: "v1.2.3-xxx.XXX",
 		},
 		{
-			name:        "good - v1.2.3+yyy.YYY",
+			ID:          testhelper.MkID("good - v1.2.3+yyy.YYY"),
 			major:       1,
 			minor:       2,
 			patch:       3,
@@ -51,7 +49,7 @@ func TestNewSV(t *testing.T) {
 			expSVString: "v1.2.3+yyy.YYY",
 		},
 		{
-			name:        "good - v1.2.3-xxx.X-XX+yyy.YYY",
+			ID:          testhelper.MkID("good - v1.2.3-xxx.X-XX+yyy.YYY"),
 			major:       1,
 			minor:       2,
 			patch:       3,
@@ -60,63 +58,52 @@ func TestNewSV(t *testing.T) {
 			expSVString: "v1.2.3-xxx.X-XX+yyy.YYY",
 		},
 		{
-			name:        "bad - major version < 0",
-			major:       -1,
-			errExpected: true,
-			errMustContain: []string{
-				"bad major version: -1 - it must be " + semver.GoodVsnNumDesc,
-			},
+			ID:    testhelper.MkID("bad - major version < 0"),
+			major: -1,
+			ExpErr: testhelper.MkExpErr(
+				"bad major version: -1 - it must be " + semver.GoodVsnNumDesc),
 		},
 		{
-			name:        "bad - minor version < 0",
-			minor:       -1,
-			errExpected: true,
-			errMustContain: []string{
-				"bad minor version: -1 - it must be " + semver.GoodVsnNumDesc,
-			},
+			ID:    testhelper.MkID("bad - minor version < 0"),
+			minor: -1,
+			ExpErr: testhelper.MkExpErr(
+				"bad minor version: -1 - it must be " + semver.GoodVsnNumDesc),
 		},
 		{
-			name:        "bad - patch version < 0",
-			patch:       -1,
-			errExpected: true,
-			errMustContain: []string{
-				"bad patch version: -1 - it must be " + semver.GoodVsnNumDesc,
-			},
+			ID:    testhelper.MkID("bad - patch version < 0"),
+			patch: -1,
+			ExpErr: testhelper.MkExpErr(
+				"bad patch version: -1 - it must be " + semver.GoodVsnNumDesc),
 		},
 		{
-			name:        "bad - invalid Pre-Rel ID - non alphanumeric or '-'",
-			prIDs:       []string{"aaa", "a$a", "bbb"},
-			errExpected: true,
-			errMustContain: []string{
-				"the Pre-Rel ID: 'a$a' must be " + semver.GoodIDDesc,
-			},
+			ID: testhelper.MkID(
+				"bad - invalid Pre-Rel ID - non alphanumeric or '-'"),
+			prIDs: []string{"aaa", "a$a", "bbb"},
+			ExpErr: testhelper.MkExpErr(
+				"the Pre-Rel ID: 'a$a' must be " + semver.GoodIDDesc),
 		},
 		{
-			name:        "bad - invalid Pre-Rel ID - numeric with leading 0",
-			prIDs:       []string{"0", "012", "bbb"},
-			errExpected: true,
-			errMustContain: []string{
+			ID: testhelper.MkID(
+				"bad - invalid Pre-Rel ID - numeric with leading 0"),
+			prIDs: []string{"0", "012", "bbb"},
+			ExpErr: testhelper.MkExpErr(
 				"the Pre-Rel ID: '012' " +
-					"must have no leading zero if it's all numeric",
-			},
+					"must have no leading zero if it's all numeric"),
 		},
 		{
-			name:        "bad - invalid build ID - non alphanumeric or '-'",
-			bIDs:        []string{"aaa", "a$a", "bbb"},
-			errExpected: true,
-			errMustContain: []string{
-				"the Build ID: 'a$a' must be " + semver.GoodIDDesc,
-			},
+			ID: testhelper.MkID(
+				"bad - invalid build ID - non alphanumeric or '-'"),
+			bIDs: []string{"aaa", "a$a", "bbb"},
+			ExpErr: testhelper.MkExpErr(
+				"the Build ID: 'a$a' must be " + semver.GoodIDDesc),
 		},
 	}
 
-	for i, tc := range testCases {
-		tcID := fmt.Sprintf("test %d: %s", i, tc.name)
+	for _, tc := range testCases {
 		sv, err := semver.NewSV(tc.major, tc.minor, tc.patch, tc.prIDs, tc.bIDs)
-		testhelper.CheckError(t, tcID, err, tc.errExpected, tc.errMustContain)
-		if err == nil && !tc.errExpected {
+		if testhelper.CheckExpErr(t, err, tc) && err == nil {
 			if sv.String() != tc.expSVString {
-				t.Log(tcID)
+				t.Log(tc.IDStr())
 				t.Logf("\t: expected: %s", tc.expSVString)
 				t.Logf("\t:      got: %s", sv.String())
 				t.Errorf("\t: bad string representation\n")
@@ -128,14 +115,13 @@ func TestNewSV(t *testing.T) {
 func TestParse(t *testing.T) {
 	const badSemVer = "bad " + semver.Name
 	testCases := []struct {
-		name           string
-		svStr          string
-		errExpected    bool
-		errMustContain []string
-		svExpected     semver.SV
+		testhelper.ID
+		testhelper.ExpErr
+		svStr      string
+		svExpected semver.SV
 	}{
 		{
-			name:  "good - with build and pre-rel ID",
+			ID:    testhelper.MkID("good - with build and pre-rel ID"),
 			svStr: "v1.2.3-aaa.bbb.c-d.0.123.123a.0123a+xxx.yyy.z-z.01.0-1",
 			svExpected: semver.SV{
 				Major: 1,
@@ -147,7 +133,7 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
-			name:  "good - no build ID",
+			ID:    testhelper.MkID("good - no build ID"),
 			svStr: "v1.2.3-xxx",
 			svExpected: semver.SV{
 				Major:     1,
@@ -157,7 +143,7 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
-			name:  "good - no pre-rel ID",
+			ID:    testhelper.MkID("good - no pre-rel ID"),
 			svStr: "v1.2.3+yyy",
 			svExpected: semver.SV{
 				Major:    1,
@@ -167,7 +153,7 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
-			name:  "good - no build or pre-rel ID",
+			ID:    testhelper.MkID("good - no build or pre-rel ID"),
 			svStr: "v1.2.3",
 			svExpected: semver.SV{
 				Major: 1,
@@ -176,122 +162,95 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
-			name:        "bad - no leading 'v'",
-			svStr:       "1.2.3-xxx+yyy",
-			errExpected: true,
-			errMustContain: []string{
-				badSemVer + " - it does not start with a 'v'",
-			},
+			ID:    testhelper.MkID("bad - no leading 'v'"),
+			svStr: "1.2.3-xxx+yyy",
+			ExpErr: testhelper.MkExpErr(
+				badSemVer + " - it does not start with a 'v'"),
 		},
 		{
-			name:        "bad - invalid Pre-Rel ID - bad char",
-			svStr:       "v1.2.3-x$xx+yyy",
-			errExpected: true,
-			errMustContain: []string{
+			ID:    testhelper.MkID("bad - invalid Pre-Rel ID - bad char"),
+			svStr: "v1.2.3-x$xx+yyy",
+			ExpErr: testhelper.MkExpErr(
 				badSemVer + " - the Pre-Rel ID: 'x$xx' must be " +
-					semver.GoodIDDesc,
-			},
+					semver.GoodIDDesc),
 		},
 		{
-			name:        "bad - invalid Pre-Rel ID - number with leading 0",
-			svStr:       "v1.2.3-012+yyy",
-			errExpected: true,
-			errMustContain: []string{
-				badSemVer + " - the Pre-Rel ID: '012'",
-				"must have no leading zero if it's all numeric",
-			},
+			ID: testhelper.MkID(
+				"bad - invalid Pre-Rel ID - number with leading 0"),
+			svStr: "v1.2.3-012+yyy",
+			ExpErr: testhelper.MkExpErr(
+				badSemVer+" - the Pre-Rel ID: '012'",
+				"must have no leading zero if it's all numeric"),
 		},
 		{
-			name:        "bad - empty Pre-Rel ID",
-			svStr:       "v1.2.3-a..b+yyy",
-			errExpected: true,
-			errMustContain: []string{
+			ID:    testhelper.MkID("bad - empty Pre-Rel ID"),
+			svStr: "v1.2.3-a..b+yyy",
+			ExpErr: testhelper.MkExpErr(
 				badSemVer + " - the Pre-Rel ID: '' must be " +
-					semver.GoodIDDesc,
-			},
+					semver.GoodIDDesc),
 		},
 		{
-			name:        "bad - invalid build ID - bad char",
-			svStr:       "v1.2.3-xxx+y$yy",
-			errExpected: true,
-			errMustContain: []string{
+			ID:    testhelper.MkID("bad - invalid build ID - bad char"),
+			svStr: "v1.2.3-xxx+y$yy",
+			ExpErr: testhelper.MkExpErr(
 				badSemVer + " - the Build ID: 'y$yy' must be " +
-					semver.GoodIDDesc,
-			},
+					semver.GoodIDDesc),
 		},
 		{
-			name:        "bad - empty build ID",
-			svStr:       "v1.2.3-xxx+",
-			errExpected: true,
-			errMustContain: []string{
-				badSemVer + " - the Build ID: '' must be " + semver.GoodIDDesc,
-			},
+			ID:    testhelper.MkID("bad - empty build ID"),
+			svStr: "v1.2.3-xxx+",
+			ExpErr: testhelper.MkExpErr(
+				badSemVer + " - the Build ID: '' must be " + semver.GoodIDDesc),
 		},
 		{
-			name:        "bad - too few version parts",
-			svStr:       "v1.2",
-			errExpected: true,
-			errMustContain: []string{
-				badSemVer + " - it cannot be split into major/minor/patch parts",
-			},
+			ID:    testhelper.MkID("bad - too few version parts"),
+			svStr: "v1.2",
+			ExpErr: testhelper.MkExpErr(badSemVer +
+				" - it cannot be split into major/minor/patch parts"),
 		},
 		{
-			name:        "bad - major part is not a number",
-			svStr:       "vX.2.3",
-			errExpected: true,
-			errMustContain: []string{
-				badSemVer + " - the major version: 'X' is not a number",
-			},
+			ID:    testhelper.MkID("bad - major part is not a number"),
+			svStr: "vX.2.3",
+			ExpErr: testhelper.MkExpErr(
+				badSemVer + " - the major version: 'X' is not a number"),
 		},
 		{
-			name:        "bad - major part has a leading zero",
-			svStr:       "v01.2.3",
-			errExpected: true,
-			errMustContain: []string{
-				badSemVer + " - the major version: '01' has a leading 0",
-			},
+			ID:    testhelper.MkID("bad - major part has a leading zero"),
+			svStr: "v01.2.3",
+			ExpErr: testhelper.MkExpErr(
+				badSemVer + " - the major version: '01' has a leading 0"),
 		},
 		{
-			name:        "bad - minor part is not a number",
-			svStr:       "v1.X.3",
-			errExpected: true,
-			errMustContain: []string{
-				badSemVer + " - the minor version: 'X' is not a number",
-			},
+			ID:    testhelper.MkID("bad - minor part is not a number"),
+			svStr: "v1.X.3",
+			ExpErr: testhelper.MkExpErr(
+				badSemVer + " - the minor version: 'X' is not a number"),
 		},
 		{
-			name:        "bad - minor part has a leading zero",
-			svStr:       "v1.02.3",
-			errExpected: true,
-			errMustContain: []string{
-				badSemVer + " - the minor version: '02' has a leading 0",
-			},
+			ID:    testhelper.MkID("bad - minor part has a leading zero"),
+			svStr: "v1.02.3",
+			ExpErr: testhelper.MkExpErr(
+				badSemVer + " - the minor version: '02' has a leading 0"),
 		},
 		{
-			name:        "bad - patch part is not a number",
-			svStr:       "v1.2.X",
-			errExpected: true,
-			errMustContain: []string{
-				badSemVer + " - the patch version: 'X' is not a number",
-			},
+			ID:    testhelper.MkID("bad - patch part is not a number"),
+			svStr: "v1.2.X",
+			ExpErr: testhelper.MkExpErr(
+				badSemVer + " - the patch version: 'X' is not a number"),
 		},
 		{
-			name:        "bad - patch part has a leading zero",
-			svStr:       "v1.2.03",
-			errExpected: true,
-			errMustContain: []string{
-				badSemVer + " - the patch version: '03' has a leading 0",
-			},
+			ID:    testhelper.MkID("bad - patch part has a leading zero"),
+			svStr: "v1.2.03",
+			ExpErr: testhelper.MkExpErr(
+				badSemVer + " - the patch version: '03' has a leading 0"),
 		},
 	}
 
-	for i, tc := range testCases {
-		tcID := fmt.Sprintf("test %d: %s", i, tc.name)
+	for _, tc := range testCases {
 		sv, err := semver.ParseSV(tc.svStr)
-		testhelper.CheckError(t, tcID, err, tc.errExpected, tc.errMustContain)
-		if err == nil && !tc.errExpected {
+		if testhelper.CheckExpErr(t, err, tc) && err == nil {
 			if !semver.Equals(sv, &tc.svExpected) {
-				t.Log(tcID)
+				t.Log(tc.IDStr())
 				t.Logf("\t: expected: %s", tc.svExpected)
 				t.Logf("\t:      got: %s", sv)
 				t.Errorf("\t: bad parsing\n")
@@ -312,12 +271,12 @@ func TestIncr(t *testing.T) {
 	}
 
 	testCases := []struct {
-		name       string
+		testhelper.ID
 		incrFunc   func(*semver.SV)
 		svExpected semver.SV
 	}{
 		{
-			name:     "IncrMajor",
+			ID:       testhelper.MkID("IncrMajor"),
 			incrFunc: semver.IncrMajor,
 			svExpected: semver.SV{
 				Major:    major + 1,
@@ -325,7 +284,7 @@ func TestIncr(t *testing.T) {
 			},
 		},
 		{
-			name:     "IncrMinor",
+			ID:       testhelper.MkID("IncrMinor"),
 			incrFunc: semver.IncrMinor,
 			svExpected: semver.SV{
 				Major:    major,
@@ -334,7 +293,7 @@ func TestIncr(t *testing.T) {
 			},
 		},
 		{
-			name:     "IncrPatch",
+			ID:       testhelper.MkID("IncrPatch"),
 			incrFunc: semver.IncrPatch,
 			svExpected: semver.SV{
 				Major:    major,
@@ -345,15 +304,13 @@ func TestIncr(t *testing.T) {
 		},
 	}
 
-	for i, tc := range testCases {
-		tcID := fmt.Sprintf("test %d: %s", i, tc.name)
-
+	for _, tc := range testCases {
 		localSV := new(semver.SV)
 		sv.CopyInto(localSV)
 
 		tc.incrFunc(localSV)
 		if !semver.Equals(localSV, &tc.svExpected) {
-			t.Log(tcID)
+			t.Log(tc.IDStr())
 			t.Logf("\t: expected: %s", tc.svExpected)
 			t.Logf("\t:      got: %s", localSV)
 			t.Errorf("\t: bad increment\n")

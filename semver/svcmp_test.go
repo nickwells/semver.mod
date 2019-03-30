@@ -1,10 +1,10 @@
 package semver_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/nickwells/semver.mod/semver"
+	"github.com/nickwells/testhelper.mod/testhelper"
 )
 
 func TestLess(t *testing.T) {
@@ -71,110 +71,114 @@ func TestLess(t *testing.T) {
 		Patch: 1,
 	}
 	testCases := []struct {
-		name         string
+		testhelper.ID
 		a, b         *semver.SV
 		shouldBeLess bool
 	}{
 		{
-			name: "equal - no prIDs",
-			a:    v100,
-			b:    v100,
+			ID: testhelper.MkID("equal - no prIDs"),
+			a:  v100,
+			b:  v100,
 		},
 		{
-			name:         "major versions a<b",
+			ID:           testhelper.MkID("major versions a<b"),
 			a:            v100,
 			b:            v200,
 			shouldBeLess: true,
 		},
 		{
-			name: "major versions a>b",
-			a:    v200,
-			b:    v100,
+			ID: testhelper.MkID("major versions a>b"),
+			a:  v200,
+			b:  v100,
 		},
 		{
-			name:         "minor versions a<b",
+			ID:           testhelper.MkID("minor versions a<b"),
 			a:            v200,
 			b:            v210,
 			shouldBeLess: true,
 		},
 		{
-			name: "minor versions a>b",
-			a:    v210,
-			b:    v200,
+			ID: testhelper.MkID("minor versions a>b"),
+			a:  v210,
+			b:  v200,
 		},
 		{
-			name:         "patch versions a<b",
+			ID:           testhelper.MkID("patch versions a<b"),
 			a:            v210,
 			b:            v211,
 			shouldBeLess: true,
 		},
 		{
-			name: "patch versions a>b",
-			a:    v211,
-			b:    v210,
+			ID: testhelper.MkID("patch versions a>b"),
+			a:  v211,
+			b:  v210,
 		},
 		{
-			name:         "prIDs - shorter is less, a<b",
+			ID:           testhelper.MkID("prIDs - shorter is less, a<b"),
 			a:            v100_alpha,
 			b:            v100_alpha_1,
 			shouldBeLess: true,
 		},
 		{
-			name: "prIDs - shorter is less, a>b",
-			a:    v100_alpha_1,
-			b:    v100_alpha,
+			ID: testhelper.MkID("prIDs - shorter is less, a>b"),
+			a:  v100_alpha_1,
+			b:  v100_alpha,
 		},
 		{
-			name:         "prIDs - numeric is less than alphanumeric, a<b",
+			ID: testhelper.MkID(
+				"prIDs - numeric is less than alphanumeric, a<b"),
 			a:            v100_alpha_1,
 			b:            v100_alpha_beta,
 			shouldBeLess: true,
 		},
 		{
-			name: "prIDs - numeric is less than alphanumeric, a>b",
-			a:    v100_alpha_beta,
-			b:    v100_alpha_1,
+			ID: testhelper.MkID(
+				"prIDs - numeric is less than alphanumeric, a>b"),
+			a: v100_alpha_beta,
+			b: v100_alpha_1,
 		},
 		{
-			name:         "prIDs - alphanumeric less by lexi order, a<b",
+			ID: testhelper.MkID(
+				"prIDs - alphanumeric less by lexi order, a<b"),
 			a:            v100_alpha_beta,
 			b:            v100_beta,
 			shouldBeLess: true,
 		},
 		{
-			name: "prIDs - alphanumeric less by lexi order, a>b",
-			a:    v100_beta,
-			b:    v100_alpha_beta,
+			ID: testhelper.MkID("prIDs - alphanumeric less by lexi order, a>b"),
+			a:  v100_beta,
+			b:  v100_alpha_beta,
 		},
 		{
-			name:         "prIDs - numeric less by numeric order, a<b",
+			ID: testhelper.MkID(
+				"prIDs - numeric less by numeric order, a<b"),
 			a:            v100_beta_2,
 			b:            v100_beta_11,
 			shouldBeLess: true,
 		},
 		{
-			name: "prIDs - numeric less by numeric order, a>b",
-			a:    v100_beta_11,
-			b:    v100_beta_2,
+			ID: testhelper.MkID("prIDs - numeric less by numeric order, a>b"),
+			a:  v100_beta_11,
+			b:  v100_beta_2,
 		},
 		{
-			name:         "prIDs - any prID less than none, a<b",
+			ID: testhelper.MkID(
+				"prIDs - any prID less than none, a<b"),
 			a:            v100_rc_1,
 			b:            v100,
 			shouldBeLess: true,
 		},
 		{
-			name: "prIDs - any prID less than none, a>b",
-			a:    v100,
-			b:    v100_rc_1,
+			ID: testhelper.MkID("prIDs - any prID less than none, a>b"),
+			a:  v100,
+			b:  v100_rc_1,
 		},
 	}
 
-	for i, tc := range testCases {
-		tcID := fmt.Sprintf("test %d: %s", i, tc.name)
+	for _, tc := range testCases {
 		isLess := semver.Less(tc.a, tc.b)
 		if isLess != tc.shouldBeLess {
-			t.Log(tcID)
+			t.Log(tc.IDStr())
 			t.Logf("\t: %s", tc.a)
 			t.Logf("\t: %s", tc.b)
 			t.Errorf("\t: is less? %t should be less? %t\n",
@@ -205,32 +209,39 @@ func TestEquals(t *testing.T) {
 	svCopies[9].BuildIDs = []string{"b", "a"}
 
 	testCases := []struct {
-		name     string
+		testhelper.ID
 		sv1      semver.SV
 		sv2      semver.SV
 		expEqual bool
 	}{
-		{name: "should be equal",
+		{ID: testhelper.MkID("should be equal"),
 			sv1: baseSV, sv2: svCopies[0], expEqual: true},
-		{name: "Major version differs", sv1: baseSV, sv2: svCopies[1]},
-		{name: "Minor version differs", sv1: baseSV, sv2: svCopies[2]},
-		{name: "Patch version differs", sv1: baseSV, sv2: svCopies[3]},
-		{name: "too few PreRelIDs", sv1: baseSV, sv2: svCopies[4]},
-		{name: "too many PreRelIDs", sv1: baseSV, sv2: svCopies[5]},
-		{name: "PreRelIDs in wrong order", sv1: baseSV, sv2: svCopies[6]},
-		{name: "too few BuildIDs", sv1: baseSV, sv2: svCopies[7]},
-		{name: "too many BuildIDs", sv1: baseSV, sv2: svCopies[8]},
-		{name: "BuildIDs in wrong order", sv1: baseSV, sv2: svCopies[9]},
+		{ID: testhelper.MkID("Major version differs"),
+			sv1: baseSV, sv2: svCopies[1]},
+		{ID: testhelper.MkID("Minor version differs"),
+			sv1: baseSV, sv2: svCopies[2]},
+		{ID: testhelper.MkID("Patch version differs"),
+			sv1: baseSV, sv2: svCopies[3]},
+		{ID: testhelper.MkID("too few PreRelIDs"),
+			sv1: baseSV, sv2: svCopies[4]},
+		{ID: testhelper.MkID("too many PreRelIDs"),
+			sv1: baseSV, sv2: svCopies[5]},
+		{ID: testhelper.MkID("PreRelIDs in wrong order"),
+			sv1: baseSV, sv2: svCopies[6]},
+		{ID: testhelper.MkID("too few BuildIDs"),
+			sv1: baseSV, sv2: svCopies[7]},
+		{ID: testhelper.MkID("too many BuildIDs"),
+			sv1: baseSV, sv2: svCopies[8]},
+		{ID: testhelper.MkID("BuildIDs in wrong order"),
+			sv1: baseSV, sv2: svCopies[9]},
 	}
 
-	for i, tc := range testCases {
-		tcID := fmt.Sprintf("test %d: %s", i, tc.name)
-
+	for _, tc := range testCases {
 		if semver.Equals(&tc.sv1, &tc.sv2) {
 			if tc.expEqual {
 				continue
 			}
-			t.Log(tcID)
+			t.Log(tc.IDStr())
 			t.Logf("\t: %s", tc.sv1)
 			t.Logf("\t: %s", tc.sv2)
 			t.Errorf("\t: were not expected to be equal\n")
@@ -239,7 +250,7 @@ func TestEquals(t *testing.T) {
 			if !tc.expEqual {
 				continue
 			}
-			t.Log(tcID)
+			t.Log(tc.IDStr())
 			t.Logf("\t: %s", tc.sv1)
 			t.Logf("\t: %s", tc.sv2)
 			t.Errorf("\t: were expected to be equal\n")
