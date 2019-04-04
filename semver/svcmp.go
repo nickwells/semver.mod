@@ -3,7 +3,7 @@ package semver
 import "strconv"
 
 // lessPRIDs compares the PreRelIDs of the two semver values
-func lessPRIDs(a, b *SV) bool {
+func lessPRIDs(a, b *SV) bool { // nolint: gocyclo
 	if len(a.PreRelIDs) > 0 && len(b.PreRelIDs) == 0 {
 		return true
 	}
