@@ -209,10 +209,10 @@ func TestParse(t *testing.T) {
 				" - it cannot be split into major/minor/patch parts"),
 		},
 		{
-			ID:    testhelper.MkID("bad - major part is not a number"),
+			ID:    testhelper.MkID("bad - major part is not an integer"),
 			svStr: "vX.2.3",
 			ExpErr: testhelper.MkExpErr(
-				badSemVer + " - the major version: 'X' is not a number"),
+				badSemVer + " - the major version: 'X' is not an integer"),
 		},
 		{
 			ID:    testhelper.MkID("bad - major part has a leading zero"),
@@ -221,10 +221,10 @@ func TestParse(t *testing.T) {
 				badSemVer + " - the major version: '01' has a leading 0"),
 		},
 		{
-			ID:    testhelper.MkID("bad - minor part is not a number"),
+			ID:    testhelper.MkID("bad - minor part is not an integer"),
 			svStr: "v1.X.3",
 			ExpErr: testhelper.MkExpErr(
-				badSemVer + " - the minor version: 'X' is not a number"),
+				badSemVer + " - the minor version: 'X' is not an integer"),
 		},
 		{
 			ID:    testhelper.MkID("bad - minor part has a leading zero"),
@@ -233,10 +233,10 @@ func TestParse(t *testing.T) {
 				badSemVer + " - the minor version: '02' has a leading 0"),
 		},
 		{
-			ID:    testhelper.MkID("bad - patch part is not a number"),
+			ID:    testhelper.MkID("bad - patch part is not an integer"),
 			svStr: "v1.2.X",
 			ExpErr: testhelper.MkExpErr(
-				badSemVer + " - the patch version: 'X' is not a number"),
+				badSemVer + " - the patch version: 'X' is not an integer"),
 		},
 		{
 			ID:    testhelper.MkID("bad - patch part has a leading zero"),

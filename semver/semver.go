@@ -233,7 +233,7 @@ func strToVNum(s, name string) (int, error) {
 	}
 	i, err := strconv.Atoi(s)
 	if err != nil {
-		return 0, fmt.Errorf("the %s version: '%s' is not a number", name, s)
+		return 0, fmt.Errorf("the %s version: '%s' is not an integer", name, s)
 	}
 	if i < 0 {
 		return 0, fmt.Errorf("the %s version: '%s' must be %s",
