@@ -170,38 +170,47 @@ func NewSVWithIDRules(major, minor, patch int,
 	return sv, nil
 }
 
-// ParseSV will parse the semver string into an SV object. It will return a
-// pointer to a properly constructed SV and a nil error if the semver is
-// well-formed or a nil pointer and an error otherwise
+// ParseSV will parse the semver string into an SV object. It will strip off
+// the leading 'v' which must be present. It will return a pointer to a
+// properly constructed SV and a nil error if the semver is well-formed or a
+// nil pointer and an error otherwise
 func ParseSV(semver string) (*SV, error) {
-	sv := SV{}
-
 	s := strings.TrimPrefix(semver, "v")
 	if s == semver {
 		return nil,
 			fmt.Errorf("bad %s - it does not start with a 'v'", Name)
 	}
+
+	return ParseStrictSV(s)
+}
+
+// ParseStrictSV will parse the semver string into an SV object. It is
+// expected to have no prefix. It will return a pointer to a properly
+// constructed SV and a nil error if the semver is well-formed or a nil
+// pointer and an error otherwise
+func ParseStrictSV(semver string) (*SV, error) {
+	sv := SV{}
 	var err error
 
-	parts := strings.SplitN(s, "+", 2)
+	parts := strings.SplitN(semver, "+", 2)
 	if len(parts) == 2 {
-		s = parts[0]
+		semver = parts[0]
 		sv.BuildIDs = strings.Split(parts[1], ".")
 		if err = CheckAllBuildIDs(sv.BuildIDs); err != nil {
 			return nil, fmt.Errorf("bad %s - %s", Name, err)
 		}
 	}
 
-	parts = strings.SplitN(s, "-", 2)
+	parts = strings.SplitN(semver, "-", 2)
 	if len(parts) == 2 {
-		s = parts[0]
+		semver = parts[0]
 		sv.PreRelIDs = strings.Split(parts[1], ".")
 		if err = CheckAllPreRelIDs(sv.PreRelIDs); err != nil {
 			return nil, fmt.Errorf("bad %s - %s", Name, err)
 		}
 	}
 
-	parts = strings.SplitN(s, ".", 3)
+	parts = strings.SplitN(semver, ".", 3)
 	if len(parts) != 3 {
 		return nil,
 			fmt.Errorf("bad %s"+
