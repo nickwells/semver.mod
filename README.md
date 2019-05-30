@@ -1,3 +1,5 @@
+[![GoDoc](https://godoc.org/github.com/nickwells/semver.mod?status.png)](https://godoc.org/github.com/nickwells/semver.mod)
+
 # semver
 funcs for parsing and manipulating semantic version numbers (semvers)
 
