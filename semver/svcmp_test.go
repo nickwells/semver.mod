@@ -13,43 +13,43 @@ func TestLess(t *testing.T) {
 		Minor: 0,
 		Patch: 0,
 	}
-	v100_alpha := &semver.SV{
+	v100Alpha := &semver.SV{
 		Major:     1,
 		Minor:     0,
 		Patch:     0,
 		PreRelIDs: []string{"alpha"},
 	}
-	v100_alpha_1 := &semver.SV{
+	v100Alpha1 := &semver.SV{
 		Major:     1,
 		Minor:     0,
 		Patch:     0,
 		PreRelIDs: []string{"alpha", "1"},
 	}
-	v100_alpha_beta := &semver.SV{
+	v100AlphaBeta := &semver.SV{
 		Major:     1,
 		Minor:     0,
 		Patch:     0,
 		PreRelIDs: []string{"alpha", "beta"},
 	}
-	v100_beta := &semver.SV{
+	v100Beta := &semver.SV{
 		Major:     1,
 		Minor:     0,
 		Patch:     0,
 		PreRelIDs: []string{"beta"},
 	}
-	v100_beta_2 := &semver.SV{
+	v100Beta2 := &semver.SV{
 		Major:     1,
 		Minor:     0,
 		Patch:     0,
 		PreRelIDs: []string{"beta", "2"},
 	}
-	v100_beta_11 := &semver.SV{
+	v100Beta11 := &semver.SV{
 		Major:     1,
 		Minor:     0,
 		Patch:     0,
 		PreRelIDs: []string{"beta", "11"},
 	}
-	v100_rc_1 := &semver.SV{
+	v100RC1 := &semver.SV{
 		Major:     1,
 		Minor:     0,
 		Patch:     0,
@@ -115,63 +115,63 @@ func TestLess(t *testing.T) {
 		},
 		{
 			ID:           testhelper.MkID("prIDs - shorter is less, a<b"),
-			a:            v100_alpha,
-			b:            v100_alpha_1,
+			a:            v100Alpha,
+			b:            v100Alpha1,
 			shouldBeLess: true,
 		},
 		{
 			ID: testhelper.MkID("prIDs - shorter is less, a>b"),
-			a:  v100_alpha_1,
-			b:  v100_alpha,
+			a:  v100Alpha1,
+			b:  v100Alpha,
 		},
 		{
 			ID: testhelper.MkID(
 				"prIDs - numeric is less than alphanumeric, a<b"),
-			a:            v100_alpha_1,
-			b:            v100_alpha_beta,
+			a:            v100Alpha1,
+			b:            v100AlphaBeta,
 			shouldBeLess: true,
 		},
 		{
 			ID: testhelper.MkID(
 				"prIDs - numeric is less than alphanumeric, a>b"),
-			a: v100_alpha_beta,
-			b: v100_alpha_1,
+			a: v100AlphaBeta,
+			b: v100Alpha1,
 		},
 		{
 			ID: testhelper.MkID(
 				"prIDs - alphanumeric less by lexi order, a<b"),
-			a:            v100_alpha_beta,
-			b:            v100_beta,
+			a:            v100AlphaBeta,
+			b:            v100Beta,
 			shouldBeLess: true,
 		},
 		{
 			ID: testhelper.MkID("prIDs - alphanumeric less by lexi order, a>b"),
-			a:  v100_beta,
-			b:  v100_alpha_beta,
+			a:  v100Beta,
+			b:  v100AlphaBeta,
 		},
 		{
 			ID: testhelper.MkID(
 				"prIDs - numeric less by numeric order, a<b"),
-			a:            v100_beta_2,
-			b:            v100_beta_11,
+			a:            v100Beta2,
+			b:            v100Beta11,
 			shouldBeLess: true,
 		},
 		{
 			ID: testhelper.MkID("prIDs - numeric less by numeric order, a>b"),
-			a:  v100_beta_11,
-			b:  v100_beta_2,
+			a:  v100Beta11,
+			b:  v100Beta2,
 		},
 		{
 			ID: testhelper.MkID(
 				"prIDs - any prID less than none, a<b"),
-			a:            v100_rc_1,
+			a:            v100RC1,
 			b:            v100,
 			shouldBeLess: true,
 		},
 		{
 			ID: testhelper.MkID("prIDs - any prID less than none, a>b"),
 			a:  v100,
-			b:  v100_rc_1,
+			b:  v100RC1,
 		},
 	}
 
