@@ -102,12 +102,8 @@ func TestNewSV(t *testing.T) {
 	for _, tc := range testCases {
 		sv, err := semver.NewSV(tc.major, tc.minor, tc.patch, tc.prIDs, tc.bIDs)
 		if testhelper.CheckExpErr(t, err, tc) && err == nil {
-			if sv.String() != tc.expSVString {
-				t.Log(tc.IDStr())
-				t.Logf("\t: expected: %s", tc.expSVString)
-				t.Logf("\t:      got: %s", sv.String())
-				t.Errorf("\t: bad string representation\n")
-			}
+			testhelper.CmpValString(t, tc.IDStr(), "semver string",
+				sv.String(), tc.expSVString)
 		}
 	}
 }
