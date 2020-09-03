@@ -102,7 +102,7 @@ func TestNewSV(t *testing.T) {
 	for _, tc := range testCases {
 		sv, err := semver.NewSV(tc.major, tc.minor, tc.patch, tc.prIDs, tc.bIDs)
 		if testhelper.CheckExpErr(t, err, tc) && err == nil {
-			testhelper.CmpValString(t, tc.IDStr(), "semver string",
+			testhelper.DiffString(t, tc.IDStr(), "semver string",
 				sv.String(), tc.expSVString)
 		}
 	}
