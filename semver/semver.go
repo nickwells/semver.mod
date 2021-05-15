@@ -17,9 +17,11 @@ const (
 	GoodVsnNumDesc = "greater than or equal to zero"
 )
 
-var idRE *regexp.Regexp
-var numericOnlyRE *regexp.Regexp
-var goodNumericRE *regexp.Regexp
+var (
+	idRE          *regexp.Regexp
+	numericOnlyRE *regexp.Regexp
+	goodNumericRE *regexp.Regexp
+)
 
 func init() {
 	idRE = regexp.MustCompile("^[-0-9A-Za-z]+$")

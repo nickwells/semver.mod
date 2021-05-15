@@ -123,8 +123,10 @@ func TestParse(t *testing.T) {
 				Major: 1,
 				Minor: 2,
 				Patch: 3,
-				PreRelIDs: []string{"aaa", "bbb", "c-d",
-					"0", "123", "123a", "0123a"},
+				PreRelIDs: []string{
+					"aaa", "bbb", "c-d",
+					"0", "123", "123a", "0123a",
+				},
 				BuildIDs: []string{"xxx", "yyy", "z-z", "01", "0-1"},
 			},
 		},

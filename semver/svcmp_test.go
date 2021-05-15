@@ -186,6 +186,7 @@ func TestLess(t *testing.T) {
 		}
 	}
 }
+
 func TestEquals(t *testing.T) {
 	baseSV := semver.SV{
 		Major:     1,
@@ -210,40 +211,33 @@ func TestEquals(t *testing.T) {
 
 	testCases := []struct {
 		testhelper.ID
-		sv1      semver.SV
-		sv2      semver.SV
+		sv       semver.SV
 		expEqual bool
 	}{
-		{ID: testhelper.MkID("should be equal"),
-			sv1: baseSV, sv2: svCopies[0], expEqual: true},
-		{ID: testhelper.MkID("Major version differs"),
-			sv1: baseSV, sv2: svCopies[1]},
-		{ID: testhelper.MkID("Minor version differs"),
-			sv1: baseSV, sv2: svCopies[2]},
-		{ID: testhelper.MkID("Patch version differs"),
-			sv1: baseSV, sv2: svCopies[3]},
-		{ID: testhelper.MkID("too few PreRelIDs"),
-			sv1: baseSV, sv2: svCopies[4]},
-		{ID: testhelper.MkID("too many PreRelIDs"),
-			sv1: baseSV, sv2: svCopies[5]},
-		{ID: testhelper.MkID("PreRelIDs in wrong order"),
-			sv1: baseSV, sv2: svCopies[6]},
-		{ID: testhelper.MkID("too few BuildIDs"),
-			sv1: baseSV, sv2: svCopies[7]},
-		{ID: testhelper.MkID("too many BuildIDs"),
-			sv1: baseSV, sv2: svCopies[8]},
-		{ID: testhelper.MkID("BuildIDs in wrong order"),
-			sv1: baseSV, sv2: svCopies[9]},
+		{
+			ID:       testhelper.MkID("should be equal"),
+			sv:       svCopies[0],
+			expEqual: true,
+		},
+		{ID: testhelper.MkID("Major version differs"), sv: svCopies[1]},
+		{ID: testhelper.MkID("Minor version differs"), sv: svCopies[2]},
+		{ID: testhelper.MkID("Patch version differs"), sv: svCopies[3]},
+		{ID: testhelper.MkID("too few PreRelIDs"), sv: svCopies[4]},
+		{ID: testhelper.MkID("too many PreRelIDs"), sv: svCopies[5]},
+		{ID: testhelper.MkID("PreRelIDs in wrong order"), sv: svCopies[6]},
+		{ID: testhelper.MkID("too few BuildIDs"), sv: svCopies[7]},
+		{ID: testhelper.MkID("too many BuildIDs"), sv: svCopies[8]},
+		{ID: testhelper.MkID("BuildIDs in wrong order"), sv: svCopies[9]},
 	}
 
 	for _, tc := range testCases {
-		if semver.Equals(&tc.sv1, &tc.sv2) {
+		if semver.Equals(&baseSV, &tc.sv) {
 			if tc.expEqual {
 				continue
 			}
 			t.Log(tc.IDStr())
-			t.Logf("\t: %s", tc.sv1)
-			t.Logf("\t: %s", tc.sv2)
+			t.Logf("\t: %s", baseSV)
+			t.Logf("\t: %s", tc.sv)
 			t.Errorf("\t: were not expected to be equal\n")
 		} else {
 
@@ -251,8 +245,8 @@ func TestEquals(t *testing.T) {
 				continue
 			}
 			t.Log(tc.IDStr())
-			t.Logf("\t: %s", tc.sv1)
-			t.Logf("\t: %s", tc.sv2)
+			t.Logf("\t: %s", baseSV)
+			t.Logf("\t: %s", tc.sv)
 			t.Errorf("\t: were expected to be equal\n")
 		}
 	}
