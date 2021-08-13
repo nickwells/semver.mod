@@ -1,4 +1,4 @@
-github.com/nickwells/check.mod v1.6.15 h1:/WtR408qZM0ItnfvroDKo2B6LvF34NJPyWyGt2QyXu0=
-github.com/nickwells/check.mod v1.6.15/go.mod h1:GcJoD+3Di7Xl7kHZJ8NZXqTnCuLhD6jLnPItKdQDopc=
-github.com/nickwells/testhelper.mod v1.15.1 h1:CHOqnYXRXkIUDAv0fubNx220MyKAiFMNmmKD1glFtvU=
-github.com/nickwells/testhelper.mod v1.15.1/go.mod h1:Ct/U2PjL0n9hGc+US6uR/s4NxSRI33NM+0ZkrDkG0XI=
+github.com/nickwells/check.mod v1.6.16 h1:+O0hIactmYokIEeB/BC8FU+5bHr0ANN+OJSbKktG82A=
+github.com/nickwells/check.mod v1.6.16/go.mod h1:nH6juR//U6n1Mr3SCY/1XWDLjAqI1BYdqTEQgCdm8TM=
+github.com/nickwells/testhelper.mod v1.16.0 h1:uh6CATjMyw/ASPdIrF2e4yTfWGYzJHK6RSJrRuZxgK4=
+github.com/nickwells/testhelper.mod v1.16.0/go.mod h1:Ct/U2PjL0n9hGc+US6uR/s4NxSRI33NM+0ZkrDkG0XI=
