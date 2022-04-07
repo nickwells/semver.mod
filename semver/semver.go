@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/nickwells/check.mod/check"
+	"github.com/nickwells/check.mod/v2/check"
 )
 
 const (
@@ -132,7 +132,7 @@ func NewSV(major, minor, patch int, prIDs, buildIDs []string) (*SV, error) {
 
 // CheckRules will confirm that all the checks are satisfied by the slice of
 // IDs and return an error if not.
-func CheckRules(ids []string, checks []check.StringSlice) error {
+func CheckRules(ids []string, checks []check.ValCk[[]string]) error {
 	for _, chk := range checks {
 		err := chk(ids)
 		if err != nil {
@@ -147,10 +147,11 @@ func CheckRules(ids []string, checks []check.StringSlice) error {
 // will also run the additional checks on the IDs and return an error if any
 // of them fail. This allows you to enforce rules for the pre-release IDs and
 // the build IDs. For instance you could prevent any semvers from having
-// build IDs by passing a check the that slice of strings is empty.
+// build IDs by passing a check that the slice of strings is empty.
 func NewSVWithIDRules(major, minor, patch int,
 	prIDs, buildIDs []string,
-	prIDRules, bIDRules []check.StringSlice) (*SV, error) {
+	prIDRules, bIDRules []check.ValCk[[]string],
+) (*SV, error) {
 	sv := &SV{
 		Major:     major,
 		Minor:     minor,

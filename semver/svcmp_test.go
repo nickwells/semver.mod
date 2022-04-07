@@ -3,8 +3,8 @@ package semver_test
 import (
 	"testing"
 
-	"github.com/nickwells/semver.mod/semver"
-	"github.com/nickwells/testhelper.mod/testhelper"
+	"github.com/nickwells/semver.mod/v2/semver"
+	"github.com/nickwells/testhelper.mod/v2/testhelper"
 )
 
 func TestLess(t *testing.T) {
