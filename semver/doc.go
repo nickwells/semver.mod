@@ -10,6 +10,5 @@ pre-release and build IDs and will return an error if any part is invalid.
 
 There is an SVList type (a slice of pointers to SVs) which has member
 functions (Len, Less and Swap) which make it able to be sorted.
-
 */
 package semver
