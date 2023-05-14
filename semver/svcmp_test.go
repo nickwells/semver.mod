@@ -3,73 +3,24 @@ package semver_test
 import (
 	"testing"
 
-	"github.com/nickwells/semver.mod/v2/semver"
+	"github.com/nickwells/semver.mod/v3/semver"
 	"github.com/nickwells/testhelper.mod/v2/testhelper"
 )
 
 func TestLess(t *testing.T) {
-	v100 := &semver.SV{
-		Major: 1,
-		Minor: 0,
-		Patch: 0,
-	}
-	v100Alpha := &semver.SV{
-		Major:     1,
-		Minor:     0,
-		Patch:     0,
-		PreRelIDs: []string{"alpha"},
-	}
-	v100Alpha1 := &semver.SV{
-		Major:     1,
-		Minor:     0,
-		Patch:     0,
-		PreRelIDs: []string{"alpha", "1"},
-	}
-	v100AlphaBeta := &semver.SV{
-		Major:     1,
-		Minor:     0,
-		Patch:     0,
-		PreRelIDs: []string{"alpha", "beta"},
-	}
-	v100Beta := &semver.SV{
-		Major:     1,
-		Minor:     0,
-		Patch:     0,
-		PreRelIDs: []string{"beta"},
-	}
-	v100Beta2 := &semver.SV{
-		Major:     1,
-		Minor:     0,
-		Patch:     0,
-		PreRelIDs: []string{"beta", "2"},
-	}
-	v100Beta11 := &semver.SV{
-		Major:     1,
-		Minor:     0,
-		Patch:     0,
-		PreRelIDs: []string{"beta", "11"},
-	}
-	v100RC1 := &semver.SV{
-		Major:     1,
-		Minor:     0,
-		Patch:     0,
-		PreRelIDs: []string{"rc", "1"},
-	}
-	v200 := &semver.SV{
-		Major: 2,
-		Minor: 0,
-		Patch: 0,
-	}
-	v210 := &semver.SV{
-		Major: 2,
-		Minor: 1,
-		Patch: 0,
-	}
-	v211 := &semver.SV{
-		Major: 2,
-		Minor: 1,
-		Patch: 1,
-	}
+	var (
+		v100    = semver.NewSVOrPanic(1, 0, 0, nil, nil)
+		v100A   = semver.NewSVOrPanic(1, 0, 0, []string{"alpha"}, nil)
+		v100A1  = semver.NewSVOrPanic(1, 0, 0, []string{"alpha", "1"}, nil)
+		v100AB  = semver.NewSVOrPanic(1, 0, 0, []string{"alpha", "beta"}, nil)
+		v100B   = semver.NewSVOrPanic(1, 0, 0, []string{"beta"}, nil)
+		v100B2  = semver.NewSVOrPanic(1, 0, 0, []string{"beta", "2"}, nil)
+		v100B11 = semver.NewSVOrPanic(1, 0, 0, []string{"beta", "11"}, nil)
+		v100RC1 = semver.NewSVOrPanic(1, 0, 0, []string{"rc", "1"}, nil)
+		v200    = semver.NewSVOrPanic(2, 0, 0, nil, nil)
+		v210    = semver.NewSVOrPanic(2, 1, 0, nil, nil)
+		v211    = semver.NewSVOrPanic(2, 1, 1, nil, nil)
+	)
 	testCases := []struct {
 		testhelper.ID
 		a, b         *semver.SV
@@ -115,51 +66,51 @@ func TestLess(t *testing.T) {
 		},
 		{
 			ID:           testhelper.MkID("prIDs - shorter is less, a<b"),
-			a:            v100Alpha,
-			b:            v100Alpha1,
+			a:            v100A,
+			b:            v100A1,
 			shouldBeLess: true,
 		},
 		{
 			ID: testhelper.MkID("prIDs - shorter is less, a>b"),
-			a:  v100Alpha1,
-			b:  v100Alpha,
+			a:  v100A1,
+			b:  v100A,
 		},
 		{
 			ID: testhelper.MkID(
 				"prIDs - numeric is less than alphanumeric, a<b"),
-			a:            v100Alpha1,
-			b:            v100AlphaBeta,
+			a:            v100A1,
+			b:            v100AB,
 			shouldBeLess: true,
 		},
 		{
 			ID: testhelper.MkID(
 				"prIDs - numeric is less than alphanumeric, a>b"),
-			a: v100AlphaBeta,
-			b: v100Alpha1,
+			a: v100AB,
+			b: v100A1,
 		},
 		{
 			ID: testhelper.MkID(
 				"prIDs - alphanumeric less by lexi order, a<b"),
-			a:            v100AlphaBeta,
-			b:            v100Beta,
+			a:            v100AB,
+			b:            v100B,
 			shouldBeLess: true,
 		},
 		{
 			ID: testhelper.MkID("prIDs - alphanumeric less by lexi order, a>b"),
-			a:  v100Beta,
-			b:  v100AlphaBeta,
+			a:  v100B,
+			b:  v100AB,
 		},
 		{
 			ID: testhelper.MkID(
 				"prIDs - numeric less by numeric order, a<b"),
-			a:            v100Beta2,
-			b:            v100Beta11,
+			a:            v100B2,
+			b:            v100B11,
 			shouldBeLess: true,
 		},
 		{
 			ID: testhelper.MkID("prIDs - numeric less by numeric order, a>b"),
-			a:  v100Beta11,
-			b:  v100Beta2,
+			a:  v100B11,
+			b:  v100B2,
 		},
 		{
 			ID: testhelper.MkID(
@@ -187,51 +138,66 @@ func TestLess(t *testing.T) {
 	}
 }
 
-func TestEquals(t *testing.T) {
-	baseSV := semver.SV{
-		Major:     1,
-		Minor:     2,
-		Patch:     3,
-		PreRelIDs: []string{"a", "b"},
-		BuildIDs:  []string{"a", "b"},
+// setPreRelIDs sets the pre-release IDs and reports a fatal error if it
+// cannot
+func setPreRelIDs(t *testing.T, sv *semver.SV, prIDs []string) {
+	t.Helper()
+
+	if err := sv.SetPreRelIDs(prIDs); err != nil {
+		t.Fatal("Error constructing the copy: ", err)
 	}
+}
+
+// setBuildIDs sets the build IDs and reports a fatal error if it
+// cannot
+func setBuildIDs(t *testing.T, sv *semver.SV, buildIDs []string) {
+	t.Helper()
+
+	if err := sv.SetBuildIDs(buildIDs); err != nil {
+		t.Fatal("Error constructing the copy: ", err)
+	}
+}
+
+func TestEquals(t *testing.T) {
+	baseSV := semver.NewSVOrPanic(1, 2, 3,
+		[]string{"a", "b"}, []string{"a", "b"})
 	var svCopies [10]semver.SV
 	for i := range svCopies {
-		baseSV.CopyInto(&(svCopies[i]))
+		baseSV.CopyInto(&svCopies[i])
 	}
-	svCopies[1].Major = 9
-	svCopies[2].Minor = 9
-	svCopies[3].Patch = 9
-	svCopies[4].PreRelIDs = []string{"a"}
-	svCopies[5].PreRelIDs = []string{"a", "b", "c"}
-	svCopies[6].PreRelIDs = []string{"b", "a"}
-	svCopies[7].BuildIDs = []string{"a"}
-	svCopies[8].BuildIDs = []string{"a", "b", "c"}
-	svCopies[9].BuildIDs = []string{"b", "a"}
+	(&svCopies[1]).IncrMajor()
+	(&svCopies[2]).IncrMinor()
+	(&svCopies[3]).IncrPatch()
+	setPreRelIDs(t, &svCopies[4], []string{"a"})
+	setPreRelIDs(t, &svCopies[5], []string{"a", "b", "c"})
+	setPreRelIDs(t, &svCopies[6], []string{"b", "a"})
+	setBuildIDs(t, &svCopies[7], []string{"a"})
+	setBuildIDs(t, &svCopies[8], []string{"a", "b", "c"})
+	setBuildIDs(t, &svCopies[9], []string{"b", "a"})
 
 	testCases := []struct {
 		testhelper.ID
-		sv       semver.SV
+		sv       *semver.SV
 		expEqual bool
 	}{
 		{
 			ID:       testhelper.MkID("should be equal"),
-			sv:       svCopies[0],
+			sv:       &svCopies[0],
 			expEqual: true,
 		},
-		{ID: testhelper.MkID("Major version differs"), sv: svCopies[1]},
-		{ID: testhelper.MkID("Minor version differs"), sv: svCopies[2]},
-		{ID: testhelper.MkID("Patch version differs"), sv: svCopies[3]},
-		{ID: testhelper.MkID("too few PreRelIDs"), sv: svCopies[4]},
-		{ID: testhelper.MkID("too many PreRelIDs"), sv: svCopies[5]},
-		{ID: testhelper.MkID("PreRelIDs in wrong order"), sv: svCopies[6]},
-		{ID: testhelper.MkID("too few BuildIDs"), sv: svCopies[7]},
-		{ID: testhelper.MkID("too many BuildIDs"), sv: svCopies[8]},
-		{ID: testhelper.MkID("BuildIDs in wrong order"), sv: svCopies[9]},
+		{ID: testhelper.MkID("Major version differs"), sv: &svCopies[1]},
+		{ID: testhelper.MkID("Minor version differs"), sv: &svCopies[2]},
+		{ID: testhelper.MkID("Patch version differs"), sv: &svCopies[3]},
+		{ID: testhelper.MkID("too few PreRelIDs"), sv: &svCopies[4]},
+		{ID: testhelper.MkID("too many PreRelIDs"), sv: &svCopies[5]},
+		{ID: testhelper.MkID("PreRelIDs in wrong order"), sv: &svCopies[6]},
+		{ID: testhelper.MkID("too few BuildIDs"), sv: &svCopies[7]},
+		{ID: testhelper.MkID("too many BuildIDs"), sv: &svCopies[8]},
+		{ID: testhelper.MkID("BuildIDs in wrong order"), sv: &svCopies[9]},
 	}
 
 	for _, tc := range testCases {
-		if semver.Equals(&baseSV, &tc.sv) {
+		if semver.Equals(baseSV, tc.sv) {
 			if tc.expEqual {
 				continue
 			}

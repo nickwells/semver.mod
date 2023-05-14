@@ -1,4 +1,4 @@
-module github.com/nickwells/semver.mod/v2
+module github.com/nickwells/semver.mod/v3
 
 require (
 	github.com/nickwells/check.mod/v2 v2.1.9

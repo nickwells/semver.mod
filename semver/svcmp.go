@@ -2,20 +2,20 @@ package semver
 
 import "strconv"
 
-// lessPRIDs compares the PreRelIDs of the two semver values
+// lessPRIDs compares the preRelIDs of the two semver values
 func lessPRIDs(a, b *SV) bool { // nolint: gocyclo
-	if len(a.PreRelIDs) > 0 && len(b.PreRelIDs) == 0 {
+	if len(a.preRelIDs) > 0 && len(b.preRelIDs) == 0 {
 		return true
 	}
-	if len(a.PreRelIDs) == 0 && len(b.PreRelIDs) > 0 {
+	if len(a.preRelIDs) == 0 && len(b.preRelIDs) > 0 {
 		return false
 	}
 
-	for i, aID := range a.PreRelIDs {
-		if i >= len(b.PreRelIDs) {
+	for i, aID := range a.preRelIDs {
+		if i >= len(b.preRelIDs) {
 			break
 		}
-		bID := b.PreRelIDs[i]
+		bID := b.preRelIDs[i]
 		if goodNumericRE.MatchString(aID) {
 			if goodNumericRE.MatchString(bID) {
 				aAsNum, _ := strconv.Atoi(aID)
@@ -38,31 +38,31 @@ func lessPRIDs(a, b *SV) bool { // nolint: gocyclo
 		}
 	}
 
-	return len(a.PreRelIDs) < len(b.PreRelIDs)
+	return len(a.preRelIDs) < len(b.preRelIDs)
 }
 
 // Less returns true if a is less than b according to the ordering rules for
 // semantic versions given in the Semantic Versioning Specification v2.0.0
 // (spec item 11)
 func Less(a, b *SV) bool {
-	if a.Major < b.Major {
+	if a.major < b.major {
 		return true
 	}
-	if a.Major > b.Major {
+	if a.major > b.major {
 		return false
 	}
 
-	if a.Minor < b.Minor {
+	if a.minor < b.minor {
 		return true
 	}
-	if a.Minor > b.Minor {
+	if a.minor > b.minor {
 		return false
 	}
 
-	if a.Patch < b.Patch {
+	if a.patch < b.patch {
 		return true
 	}
-	if a.Patch > b.Patch {
+	if a.patch > b.patch {
 		return false
 	}
 
@@ -72,28 +72,30 @@ func Less(a, b *SV) bool {
 // Equals compares the two SemVers and returns true if they are identical,
 // false otherwise
 func Equals(a, b *SV) bool {
-	if a.Major != b.Major {
+	if a.major != b.major {
 		return false
 	}
-	if a.Minor != b.Minor {
+	if a.minor != b.minor {
 		return false
 	}
-	if a.Patch != b.Patch {
+	if a.patch != b.patch {
 		return false
 	}
-	if len(a.PreRelIDs) != len(b.PreRelIDs) {
+
+	if len(a.preRelIDs) != len(b.preRelIDs) {
 		return false
 	}
-	if len(a.BuildIDs) != len(b.BuildIDs) {
-		return false
-	}
-	for i, id := range a.PreRelIDs {
-		if id != b.PreRelIDs[i] {
+	for i, id := range a.preRelIDs {
+		if id != b.preRelIDs[i] {
 			return false
 		}
 	}
-	for i, id := range a.BuildIDs {
-		if id != b.BuildIDs[i] {
+
+	if len(a.buildIDs) != len(b.buildIDs) {
+		return false
+	}
+	for i, id := range a.buildIDs {
+		if id != b.buildIDs[i] {
 			return false
 		}
 	}

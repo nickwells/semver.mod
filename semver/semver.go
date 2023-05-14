@@ -31,11 +31,13 @@ func init() {
 
 // SV holds the parts of a semantic version number
 type SV struct {
-	Major     int
-	Minor     int
-	Patch     int
-	PreRelIDs []string
-	BuildIDs  []string
+	major     int
+	minor     int
+	patch     int
+	preRelIDs []string
+	buildIDs  []string
+
+	hasBeenSet bool
 }
 
 // CheckBuildID returns nil if the id is a well-formed semver ID - suitable
@@ -87,26 +89,26 @@ func CheckAllBuildIDs(ids []string) error {
 
 // Check will return an error if any part of the SV is not valid
 func (sv SV) Check() error {
-	if err := CheckAllPreRelIDs(sv.PreRelIDs); err != nil {
+	if err := CheckAllPreRelIDs(sv.preRelIDs); err != nil {
 		return err
 	}
-	if err := CheckAllBuildIDs(sv.BuildIDs); err != nil {
+	if err := CheckAllBuildIDs(sv.buildIDs); err != nil {
 		return err
 	}
 
-	if sv.Major < 0 {
+	if sv.major < 0 {
 		return fmt.Errorf("bad major version: %d - it must be %s",
-			sv.Major, GoodVsnNumDesc)
+			sv.major, GoodVsnNumDesc)
 	}
 
-	if sv.Minor < 0 {
+	if sv.minor < 0 {
 		return fmt.Errorf("bad minor version: %d - it must be %s",
-			sv.Minor, GoodVsnNumDesc)
+			sv.minor, GoodVsnNumDesc)
 	}
 
-	if sv.Patch < 0 {
+	if sv.patch < 0 {
 		return fmt.Errorf("bad patch version: %d - it must be %s",
-			sv.Patch, GoodVsnNumDesc)
+			sv.patch, GoodVsnNumDesc)
 	}
 
 	return nil
@@ -116,11 +118,12 @@ func (sv SV) Check() error {
 // IDs are not well-formed
 func NewSV(major, minor, patch int, prIDs, buildIDs []string) (*SV, error) {
 	sv := &SV{
-		Major:     major,
-		Minor:     minor,
-		Patch:     patch,
-		PreRelIDs: prIDs,
-		BuildIDs:  buildIDs,
+		major:      major,
+		minor:      minor,
+		patch:      patch,
+		preRelIDs:  prIDs,
+		buildIDs:   buildIDs,
+		hasBeenSet: true,
 	}
 
 	if err := sv.Check(); err != nil {
@@ -128,6 +131,16 @@ func NewSV(major, minor, patch int, prIDs, buildIDs []string) (*SV, error) {
 	}
 
 	return sv, nil
+}
+
+// NewSVOrPanic returns a pointer to a properly constructed SV. If there were
+// any errors it will panic.
+func NewSVOrPanic(major, minor, patch int, prIDs, buildIDs []string) *SV {
+	sv, err := NewSV(major, minor, patch, prIDs, buildIDs)
+	if err != nil {
+		panic(err)
+	}
+	return sv
 }
 
 // CheckRules will confirm that all the checks are satisfied by the slice of
@@ -153,11 +166,12 @@ func NewSVWithIDRules(major, minor, patch int,
 	prIDRules, bIDRules []check.ValCk[[]string],
 ) (*SV, error) {
 	sv := &SV{
-		Major:     major,
-		Minor:     minor,
-		Patch:     patch,
-		PreRelIDs: prIDs,
-		BuildIDs:  buildIDs,
+		major:      major,
+		minor:      minor,
+		patch:      patch,
+		preRelIDs:  prIDs,
+		buildIDs:   buildIDs,
+		hasBeenSet: true,
 	}
 
 	if err := sv.Check(); err != nil {
@@ -171,6 +185,21 @@ func NewSVWithIDRules(major, minor, patch int,
 	}
 
 	return sv, nil
+}
+
+// NewSVWithIDRulesOrPanic returns a pointer to a properly constructed SV. If
+// there were any errors it will panic.
+func NewSVWithIDRulesOrPanic(major, minor, patch int,
+	prIDs, buildIDs []string,
+	prIDRules, bIDRules []check.ValCk[[]string],
+) *SV {
+	sv, err := NewSVWithIDRules(major, minor, patch,
+		prIDs, buildIDs,
+		prIDRules, bIDRules)
+	if err != nil {
+		panic(err)
+	}
+	return sv
 }
 
 // ParseSV will parse the semver string into an SV object. It will strip off
@@ -198,8 +227,8 @@ func ParseStrictSV(semver string) (*SV, error) {
 	parts := strings.SplitN(semver, "+", 2)
 	if len(parts) == 2 {
 		semver = parts[0]
-		sv.BuildIDs = strings.Split(parts[1], ".")
-		if err = CheckAllBuildIDs(sv.BuildIDs); err != nil {
+		sv.buildIDs = strings.Split(parts[1], ".")
+		if err = CheckAllBuildIDs(sv.buildIDs); err != nil {
 			return nil, fmt.Errorf("bad %s - %s", Name, err)
 		}
 	}
@@ -207,8 +236,8 @@ func ParseStrictSV(semver string) (*SV, error) {
 	parts = strings.SplitN(semver, "-", 2)
 	if len(parts) == 2 {
 		semver = parts[0]
-		sv.PreRelIDs = strings.Split(parts[1], ".")
-		if err = CheckAllPreRelIDs(sv.PreRelIDs); err != nil {
+		sv.preRelIDs = strings.Split(parts[1], ".")
+		if err = CheckAllPreRelIDs(sv.preRelIDs); err != nil {
 			return nil, fmt.Errorf("bad %s - %s", Name, err)
 		}
 	}
@@ -221,18 +250,20 @@ func ParseStrictSV(semver string) (*SV, error) {
 				Name)
 	}
 
-	sv.Major, err = strToVNum(parts[0], "major")
+	sv.major, err = strToVNum(parts[0], "major")
 	if err != nil {
 		return nil, fmt.Errorf("bad %s - %s", Name, err)
 	}
-	sv.Minor, err = strToVNum(parts[1], "minor")
+	sv.minor, err = strToVNum(parts[1], "minor")
 	if err != nil {
 		return nil, fmt.Errorf("bad %s - %s", Name, err)
 	}
-	sv.Patch, err = strToVNum(parts[2], "patch")
+	sv.patch, err = strToVNum(parts[2], "patch")
 	if err != nil {
 		return nil, fmt.Errorf("bad %s - %s", Name, err)
 	}
+
+	sv.hasBeenSet = true
 
 	return &sv, nil
 }
@@ -257,74 +288,108 @@ func strToVNum(s, name string) (int, error) {
 // CopyInto copies from sv into target - it creates new slices and fills them
 // with the pre-release and build IDs
 func (sv SV) CopyInto(target *SV) {
-	target.Major = sv.Major
-	target.Minor = sv.Minor
-	target.Patch = sv.Patch
-	target.PreRelIDs = make([]string, len(sv.PreRelIDs))
-	copy(target.PreRelIDs, sv.PreRelIDs)
-	target.BuildIDs = make([]string, len(sv.BuildIDs))
-	copy(target.BuildIDs, sv.BuildIDs)
+	target.major = sv.major
+	target.minor = sv.minor
+	target.patch = sv.patch
+
+	target.preRelIDs = make([]string, len(sv.preRelIDs))
+	copy(target.preRelIDs, sv.preRelIDs)
+
+	target.buildIDs = make([]string, len(sv.buildIDs))
+	copy(target.buildIDs, sv.buildIDs)
+
+	target.hasBeenSet = sv.hasBeenSet
 }
+
+// Major returns the major version number part of the SemVer
+func (sv SV) Major() int { return sv.major }
+
+// Minor returns the minor version number part of the SemVer
+func (sv SV) Minor() int { return sv.minor }
+
+// Patch returns the patch version number part of the SemVer
+func (sv SV) Patch() int { return sv.patch }
+
+// PreRelIDs returns the preRelIDs version number part of the SemVer
+func (sv SV) PreRelIDs() []string { return sv.preRelIDs }
+
+// BuildIDs returns the buildIDs version number part of the SemVer
+func (sv SV) BuildIDs() []string { return sv.buildIDs }
+
+// HasBeenSet returns the value of the internal flag which is set if the
+// SemVer has been set
+func (sv SV) HasBeenSet() bool { return sv.hasBeenSet }
 
 // String returns a string representation of the semver
 func (sv SV) String() string {
+	if !sv.hasBeenSet {
+		return ""
+	}
+
 	b := ""
 	pr := ""
-	if len(sv.BuildIDs) > 0 {
-		b = "+" + strings.Join(sv.BuildIDs, ".")
+	if len(sv.buildIDs) > 0 {
+		b = "+" + strings.Join(sv.buildIDs, ".")
 	}
-	if len(sv.PreRelIDs) > 0 {
-		pr = "-" + strings.Join(sv.PreRelIDs, ".")
+	if len(sv.preRelIDs) > 0 {
+		pr = "-" + strings.Join(sv.preRelIDs, ".")
 	}
-	return fmt.Sprintf("v%d.%d.%d%s%s", sv.Major, sv.Minor, sv.Patch, pr, b)
+	return fmt.Sprintf("v%d.%d.%d%s%s", sv.major, sv.minor, sv.patch, pr, b)
 }
 
 // IncrMajor increments the major version number and sets the minor and patch
 // numbers to 0. It also clears the pre-release IDs (if any) but not the build
 // IDs
 func (sv *SV) IncrMajor() {
-	sv.Major++
-	sv.Minor = 0
-	sv.Patch = 0
+	sv.major++
+	sv.minor = 0
+	sv.patch = 0
 	sv.ClearPreRelIDs()
-}
-
-// IncrMajor calls the IncrMajor method on the passed SV
-func IncrMajor(sv *SV) {
-	sv.IncrMajor()
 }
 
 // IncrMinor increments the minor version number and sets the patch number to
 // 0. It also clears the pre-release IDs (if any) but not the build IDs
 func (sv *SV) IncrMinor() {
-	sv.Minor++
-	sv.Patch = 0
+	sv.minor++
+	sv.patch = 0
 	sv.ClearPreRelIDs()
-}
-
-// IncrMinor calls the IncrMinor method on the passed SV
-func IncrMinor(sv *SV) {
-	sv.IncrMinor()
 }
 
 // IncrPatch increments the patch number. It also clears the pre-release IDs
 // (if any) but not the build IDs
 func (sv *SV) IncrPatch() {
-	sv.Patch++
+	sv.patch++
 	sv.ClearPreRelIDs()
-}
-
-// IncrPatch calls the IncrPatch method on the passed SV
-func IncrPatch(sv *SV) {
-	sv.IncrPatch()
 }
 
 // ClearPreRelIDs clears the PreRelIDs
 func (sv *SV) ClearPreRelIDs() {
-	sv.PreRelIDs = []string{}
+	sv.preRelIDs = []string{}
+}
+
+// SetPreRelIDs sets the PreRelIDs
+func (sv *SV) SetPreRelIDs(ids []string) error {
+	err := CheckAllPreRelIDs(ids)
+	if err != nil {
+		return err
+	}
+
+	sv.preRelIDs = ids
+	return nil
 }
 
 // ClearBuildIDs clears the BuildIDs
 func (sv *SV) ClearBuildIDs() {
-	sv.BuildIDs = []string{}
+	sv.buildIDs = []string{}
+}
+
+// SetBuildIDs sets the BuildIDs
+func (sv *SV) SetBuildIDs(ids []string) error {
+	err := CheckAllBuildIDs(ids)
+	if err != nil {
+		return err
+	}
+
+	sv.buildIDs = ids
+	return nil
 }

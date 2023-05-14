@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nickwells/semver.mod/v2/semver"
+	"github.com/nickwells/semver.mod/v3/semver"
 	"github.com/nickwells/testhelper.mod/v2/testhelper"
 )
 
@@ -20,10 +20,12 @@ func TestNewSV(t *testing.T) {
 		prIDs       []string
 		bIDs        []string
 		expSVString string
+		dontInitSV  bool
 	}{
 		{
 			ID:          testhelper.MkID("good - nil version"),
-			expSVString: "v0.0.0",
+			dontInitSV:  true,
+			expSVString: "",
 		},
 		{
 			ID:          testhelper.MkID("good - v1.2.3"),
@@ -100,7 +102,15 @@ func TestNewSV(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		sv, err := semver.NewSV(tc.major, tc.minor, tc.patch, tc.prIDs, tc.bIDs)
+		var sv *semver.SV
+		var err error
+		if tc.dontInitSV {
+			sv = &semver.SV{}
+		} else {
+			sv, err = semver.NewSV(
+				tc.major, tc.minor, tc.patch,
+				tc.prIDs, tc.bIDs)
+		}
 		if testhelper.CheckExpErr(t, err, tc) && err == nil {
 			testhelper.DiffString(t, tc.IDStr(), "semver string",
 				sv.String(), tc.expSVString)
@@ -114,50 +124,29 @@ func TestParse(t *testing.T) {
 		testhelper.ID
 		testhelper.ExpErr
 		svStr      string
-		svExpected semver.SV
+		svExpected *semver.SV
 	}{
 		{
 			ID:    testhelper.MkID("good - with build and pre-rel ID"),
 			svStr: "v1.2.3-aaa.bbb.c-d.0.123.123a.0123a+xxx.yyy.z-z.01.0-1",
-			svExpected: semver.SV{
-				Major: 1,
-				Minor: 2,
-				Patch: 3,
-				PreRelIDs: []string{
-					"aaa", "bbb", "c-d",
-					"0", "123", "123a", "0123a",
-				},
-				BuildIDs: []string{"xxx", "yyy", "z-z", "01", "0-1"},
-			},
+			svExpected: semver.NewSVOrPanic(1, 2, 3,
+				[]string{"aaa", "bbb", "c-d", "0", "123", "123a", "0123a"},
+				[]string{"xxx", "yyy", "z-z", "01", "0-1"}),
 		},
 		{
-			ID:    testhelper.MkID("good - no build ID"),
-			svStr: "v1.2.3-xxx",
-			svExpected: semver.SV{
-				Major:     1,
-				Minor:     2,
-				Patch:     3,
-				PreRelIDs: []string{"xxx"},
-			},
+			ID:         testhelper.MkID("good - no build ID"),
+			svStr:      "v1.2.3-xxx",
+			svExpected: semver.NewSVOrPanic(1, 2, 3, []string{"xxx"}, nil),
 		},
 		{
-			ID:    testhelper.MkID("good - no pre-rel ID"),
-			svStr: "v1.2.3+yyy",
-			svExpected: semver.SV{
-				Major:    1,
-				Minor:    2,
-				Patch:    3,
-				BuildIDs: []string{"yyy"},
-			},
+			ID:         testhelper.MkID("good - no pre-rel ID"),
+			svStr:      "v1.2.3+yyy",
+			svExpected: semver.NewSVOrPanic(1, 2, 3, nil, []string{"yyy"}),
 		},
 		{
-			ID:    testhelper.MkID("good - no build or pre-rel ID"),
-			svStr: "v1.2.3",
-			svExpected: semver.SV{
-				Major: 1,
-				Minor: 2,
-				Patch: 3,
-			},
+			ID:         testhelper.MkID("good - no build or pre-rel ID"),
+			svStr:      "v1.2.3",
+			svExpected: semver.NewSVOrPanic(1, 2, 3, nil, nil),
 		},
 		{
 			ID:    testhelper.MkID("bad - no leading 'v'"),
@@ -247,7 +236,7 @@ func TestParse(t *testing.T) {
 	for _, tc := range testCases {
 		sv, err := semver.ParseSV(tc.svStr)
 		if testhelper.CheckExpErr(t, err, tc) && err == nil {
-			if !semver.Equals(sv, &tc.svExpected) {
+			if !semver.Equals(sv, tc.svExpected) {
 				t.Log(tc.IDStr())
 				t.Logf("\t: expected: %s", tc.svExpected)
 				t.Logf("\t:      got: %s", sv)
@@ -271,34 +260,24 @@ func TestIncr(t *testing.T) {
 	testCases := []struct {
 		testhelper.ID
 		incrFunc   func(*semver.SV)
-		svExpected semver.SV
+		svExpected *semver.SV
 	}{
 		{
-			ID:       testhelper.MkID("IncrMajor"),
-			incrFunc: semver.IncrMajor,
-			svExpected: semver.SV{
-				Major:    major + 1,
-				BuildIDs: []string{bID},
-			},
+			ID:         testhelper.MkID("IncrMajor"),
+			incrFunc:   func(sv *semver.SV) { sv.IncrMajor() },
+			svExpected: semver.NewSVOrPanic(major+1, 0, 0, nil, []string{bID}),
 		},
 		{
 			ID:       testhelper.MkID("IncrMinor"),
-			incrFunc: semver.IncrMinor,
-			svExpected: semver.SV{
-				Major:    major,
-				Minor:    minor + 1,
-				BuildIDs: []string{bID},
-			},
+			incrFunc: func(sv *semver.SV) { sv.IncrMinor() },
+			svExpected: semver.NewSVOrPanic(major, minor+1, 0,
+				nil, []string{bID}),
 		},
 		{
 			ID:       testhelper.MkID("IncrPatch"),
-			incrFunc: semver.IncrPatch,
-			svExpected: semver.SV{
-				Major:    major,
-				Minor:    minor,
-				Patch:    patch + 1,
-				BuildIDs: []string{bID},
-			},
+			incrFunc: func(sv *semver.SV) { sv.IncrPatch() },
+			svExpected: semver.NewSVOrPanic(major, minor, patch+1,
+				nil, []string{bID}),
 		},
 	}
 
@@ -307,7 +286,7 @@ func TestIncr(t *testing.T) {
 		sv.CopyInto(localSV)
 
 		tc.incrFunc(localSV)
-		if !semver.Equals(localSV, &tc.svExpected) {
+		if !semver.Equals(localSV, tc.svExpected) {
 			t.Log(tc.IDStr())
 			t.Logf("\t: expected: %s", tc.svExpected)
 			t.Logf("\t:      got: %s", localSV)
