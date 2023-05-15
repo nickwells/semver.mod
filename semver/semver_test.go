@@ -353,3 +353,41 @@ func TestAllGoodStrings(t *testing.T) {
 		prevSV = sv
 	}
 }
+
+func TestHasIDs(t *testing.T) {
+	testCases := []struct {
+		testhelper.ID
+		sv           *semver.SV
+		expHasPRIDs  bool
+		expHasBldIDs bool
+	}{
+		{
+			ID: testhelper.MkID("has no Pre-Rel IDs or Build IDs"),
+			sv: semver.NewSVOrPanic(1, 2, 3, nil, nil),
+		},
+		{
+			ID:          testhelper.MkID("has Pre-Rel IDs and no Build IDs"),
+			sv:          semver.NewSVOrPanic(1, 2, 3, []string{"A"}, nil),
+			expHasPRIDs: true,
+		},
+		{
+			ID:           testhelper.MkID("has Build IDs and no Pre-Rel IDs"),
+			sv:           semver.NewSVOrPanic(1, 2, 3, nil, []string{"B"}),
+			expHasBldIDs: true,
+		},
+		{
+			ID: testhelper.MkID("has Pre-Rel IDs and Build IDs"),
+			sv: semver.NewSVOrPanic(1, 2, 3,
+				[]string{"A"}, []string{"B"}),
+			expHasPRIDs:  true,
+			expHasBldIDs: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		testhelper.DiffBool(t, tc.IDStr(), "has pre-release IDs",
+			tc.sv.HasPreRelIDs(), tc.expHasPRIDs)
+		testhelper.DiffBool(t, tc.IDStr(), "has build IDs",
+			tc.sv.HasBuildIDs(), tc.expHasBldIDs)
+	}
+}

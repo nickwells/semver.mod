@@ -313,8 +313,16 @@ func (sv SV) Patch() int { return sv.patch }
 // PreRelIDs returns the preRelIDs version number part of the SemVer
 func (sv SV) PreRelIDs() []string { return sv.preRelIDs }
 
+// HasPreRelIDs returns true if the preRelIDs version number part of the
+// SemVer is non-empty
+func (sv SV) HasPreRelIDs() bool { return len(sv.preRelIDs) > 0 }
+
 // BuildIDs returns the buildIDs version number part of the SemVer
 func (sv SV) BuildIDs() []string { return sv.buildIDs }
+
+// HasBuildIDs returns true if the buildIDs version number part of the
+// SemVer is non-empty
+func (sv SV) HasBuildIDs() bool { return len(sv.buildIDs) > 0 }
 
 // HasBeenSet returns the value of the internal flag which is set if the
 // SemVer has been set
