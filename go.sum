@@ -1,9 +1,9 @@
-github.com/nickwells/check.mod/v2 v2.1.12 h1:9FQxVo/lgy6MbsWNcfMZpb8VpJl5S6B+FKrq3RatpKc=
-github.com/nickwells/check.mod/v2 v2.1.12/go.mod h1:FT5SqdOR35WKnkhzFYx7LiAsdDzMC0WT5R1EbiuFZbs=
+github.com/nickwells/check.mod/v2 v2.1.13 h1:aREfIuA+hPqTUvbAsDYwyy+G5BKSrz2TnC+xkKbse1A=
+github.com/nickwells/check.mod/v2 v2.1.13/go.mod h1:v3Zgj3dIq+EBoHylERTzvat1fTwJHehPsZv03pXWTd8=
 github.com/nickwells/english.mod v1.1.5 h1:OFmYaQ83fguWAJs3mFUcUYKILKYE4qJRiNDNnuXwp4s=
 github.com/nickwells/english.mod v1.1.5/go.mod h1:CEoMsqNbwx3J9NpMm94O1x1OW266Tj7osHmwJkQ4y/4=
-github.com/nickwells/tempus.mod v1.0.4 h1:TMWs0vRQhggno4I/24exiZawp5cpkFYlSgaBevS5LdI=
-github.com/nickwells/tempus.mod v1.0.4/go.mod h1:VctUXXkCvq3urkA02ZhmqfkmjQs3kpCLZc5byuymB00=
+github.com/nickwells/tempus.mod v1.1.0 h1:Xi0diwaBax1zKggNGMxbv65WJoMOQE7uK/Ncbyqhh2Y=
+github.com/nickwells/tempus.mod v1.1.0/go.mod h1:k6QfE9lG7ZzsQMn5rY1eaBEljPuBwoysvxSaUqlhzYQ=
 github.com/nickwells/testhelper.mod/v2 v2.3.0 h1:b/EpnHiYr8dnr6C0a6zW2KAyHgfQ72pVw3cNklSzwxs=
 github.com/nickwells/testhelper.mod/v2 v2.3.0/go.mod h1:pdhf+XHRINEUH6a0OcwC98ETD3ZluAXKA5xOhC2I2Qk=
 golang.org/x/exp v0.0.0-20230905200255-921286631fa9 h1:GoHiUyI/Tp2nVkLI2mCxVkOjsbSXD66ic0XW0js0R9g=
