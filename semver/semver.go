@@ -17,6 +17,20 @@ const (
 	GoodVsnNumDesc = "greater than or equal to zero"
 )
 
+const (
+	semverMajorVsnIdx = iota
+	semverMinorVsnIdx
+	semverPatchVsnIdx
+	semverVsnPartCount
+)
+
+const (
+	semverPrefix             = "v"
+	semverBuildIDsSeparator  = "+"
+	semverPreRelIDsSeparator = "-"
+	semverPartSeparator      = "."
+)
+
 var (
 	idRE          *regexp.Regexp
 	numericOnlyRE *regexp.Regexp
@@ -207,8 +221,8 @@ func NewSVWithIDRulesOrPanic(major, minor, patch int,
 // properly constructed SV and a nil error if the semver is well-formed or a
 // nil pointer and an error otherwise
 func ParseSV(semver string) (*SV, error) {
-	s := strings.TrimPrefix(semver, "v")
-	if s == semver {
+	s, ok := strings.CutPrefix(semver, semverPrefix)
+	if !ok {
 		return nil,
 			fmt.Errorf("bad %s - it does not start with a 'v'", Name)
 	}
@@ -222,43 +236,48 @@ func ParseSV(semver string) (*SV, error) {
 // pointer and an error otherwise
 func ParseStrictSV(semver string) (*SV, error) {
 	sv := SV{}
+
 	var err error
 
-	parts := strings.SplitN(semver, "+", 2)
-	if len(parts) == 2 {
-		semver = parts[0]
-		sv.buildIDs = strings.Split(parts[1], ".")
+	var buildIDs, preRelIDs string
+
+	var ok bool
+
+	semver, buildIDs, ok = strings.Cut(semver, semverBuildIDsSeparator)
+	if ok {
+		sv.buildIDs = strings.Split(buildIDs, semverPartSeparator)
 		if err = CheckAllBuildIDs(sv.buildIDs); err != nil {
 			return nil, fmt.Errorf("bad %s - %s", Name, err)
 		}
 	}
 
-	parts = strings.SplitN(semver, "-", 2)
-	if len(parts) == 2 {
-		semver = parts[0]
-		sv.preRelIDs = strings.Split(parts[1], ".")
+	semver, preRelIDs, ok = strings.Cut(semver, semverPreRelIDsSeparator)
+	if ok {
+		sv.preRelIDs = strings.Split(preRelIDs, semverPartSeparator)
 		if err = CheckAllPreRelIDs(sv.preRelIDs); err != nil {
 			return nil, fmt.Errorf("bad %s - %s", Name, err)
 		}
 	}
 
-	parts = strings.SplitN(semver, ".", 3)
-	if len(parts) != 3 {
+	parts := strings.SplitN(semver, semverPartSeparator, semverVsnPartCount)
+	if len(parts) != semverVsnPartCount {
 		return nil,
 			fmt.Errorf("bad %s"+
 				" - it cannot be split into major/minor/patch parts",
 				Name)
 	}
 
-	sv.major, err = strToVNum(parts[0], "major")
+	sv.major, err = strToVNum(parts[semverMajorVsnIdx], "major")
 	if err != nil {
 		return nil, fmt.Errorf("bad %s - %s", Name, err)
 	}
-	sv.minor, err = strToVNum(parts[1], "minor")
+
+	sv.minor, err = strToVNum(parts[semverMinorVsnIdx], "minor")
 	if err != nil {
 		return nil, fmt.Errorf("bad %s - %s", Name, err)
 	}
-	sv.patch, err = strToVNum(parts[2], "patch")
+
+	sv.patch, err = strToVNum(parts[semverPatchVsnIdx], "patch")
 	if err != nil {
 		return nil, fmt.Errorf("bad %s - %s", Name, err)
 	}
@@ -334,15 +353,24 @@ func (sv SV) String() string {
 		return ""
 	}
 
-	b := ""
-	pr := ""
+	buildIDs := ""
+	prIDs := ""
+
 	if len(sv.buildIDs) > 0 {
-		b = "+" + strings.Join(sv.buildIDs, ".")
+		buildIDs = semverBuildIDsSeparator +
+			strings.Join(sv.buildIDs, semverPartSeparator)
 	}
+
 	if len(sv.preRelIDs) > 0 {
-		pr = "-" + strings.Join(sv.preRelIDs, ".")
+		prIDs = semverPreRelIDsSeparator +
+			strings.Join(sv.preRelIDs, semverPartSeparator)
 	}
-	return fmt.Sprintf("v%d.%d.%d%s%s", sv.major, sv.minor, sv.patch, pr, b)
+
+	return semverPrefix +
+		fmt.Sprintf("%d", sv.major) + semverPartSeparator +
+		fmt.Sprintf("%d", sv.minor) + semverPartSeparator +
+		fmt.Sprintf("%d", sv.patch) +
+		prIDs + buildIDs
 }
 
 // IncrMajor increments the major version number and sets the minor and patch
