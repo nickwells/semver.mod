@@ -291,16 +291,19 @@ func ParseStrictSV(semver string) (*SV, error) {
 // it finds
 func strToVNum(s, name string) (int, error) {
 	if len(s) > 1 && s[0] == '0' {
-		return 0, fmt.Errorf("the %s version: '%s' has a leading 0", name, s)
+		return 0, fmt.Errorf("the %s version: %q has a leading 0", name, s)
 	}
+
 	i, err := strconv.Atoi(s)
 	if err != nil {
-		return 0, fmt.Errorf("the %s version: '%s' is not an integer", name, s)
+		return 0, fmt.Errorf("the %s version: %q is not an integer", name, s)
 	}
+
 	if i < 0 {
-		return 0, fmt.Errorf("the %s version: '%s' must be %s",
+		return 0, fmt.Errorf("the %s version: %q must be %s",
 			name, s, GoodVsnNumDesc)
 	}
+
 	return i, nil
 }
 
