@@ -3,10 +3,13 @@ package semver
 import "strconv"
 
 // lessPRIDs compares the preRelIDs of the two semver values
-func lessPRIDs(a, b *SV) bool { // nolint: gocyclo
+//
+//nolint:cyclop
+func lessPRIDs(a, b *SV) bool {
 	if len(a.preRelIDs) > 0 && len(b.preRelIDs) == 0 {
 		return true
 	}
+
 	if len(a.preRelIDs) == 0 && len(b.preRelIDs) > 0 {
 		return false
 	}
@@ -15,14 +18,18 @@ func lessPRIDs(a, b *SV) bool { // nolint: gocyclo
 		if i >= len(b.preRelIDs) {
 			break
 		}
+
 		bID := b.preRelIDs[i]
+
 		if goodNumericRE.MatchString(aID) {
 			if goodNumericRE.MatchString(bID) {
 				aAsNum, _ := strconv.Atoi(aID)
 				bAsNum, _ := strconv.Atoi(bID)
+
 				if aAsNum < bAsNum {
 					return true
 				}
+
 				if aAsNum > bAsNum {
 					return false
 				}
@@ -48,6 +55,7 @@ func Less(a, b *SV) bool {
 	if a.major < b.major {
 		return true
 	}
+
 	if a.major > b.major {
 		return false
 	}
@@ -55,6 +63,7 @@ func Less(a, b *SV) bool {
 	if a.minor < b.minor {
 		return true
 	}
+
 	if a.minor > b.minor {
 		return false
 	}
@@ -62,6 +71,7 @@ func Less(a, b *SV) bool {
 	if a.patch < b.patch {
 		return true
 	}
+
 	if a.patch > b.patch {
 		return false
 	}
@@ -75,9 +85,11 @@ func Equals(a, b *SV) bool {
 	if a.major != b.major {
 		return false
 	}
+
 	if a.minor != b.minor {
 		return false
 	}
+
 	if a.patch != b.patch {
 		return false
 	}
@@ -85,6 +97,7 @@ func Equals(a, b *SV) bool {
 	if len(a.preRelIDs) != len(b.preRelIDs) {
 		return false
 	}
+
 	for i, id := range a.preRelIDs {
 		if id != b.preRelIDs[i] {
 			return false
@@ -94,6 +107,7 @@ func Equals(a, b *SV) bool {
 	if len(a.buildIDs) != len(b.buildIDs) {
 		return false
 	}
+
 	for i, id := range a.buildIDs {
 		if id != b.buildIDs[i] {
 			return false

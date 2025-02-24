@@ -103,7 +103,9 @@ func TestNewSV(t *testing.T) {
 
 	for _, tc := range testCases {
 		var sv *semver.SV
+
 		var err error
+
 		if tc.dontInitSV {
 			sv = &semver.SV{}
 		} else {
@@ -111,6 +113,7 @@ func TestNewSV(t *testing.T) {
 				tc.major, tc.minor, tc.patch,
 				tc.prIDs, tc.bIDs)
 		}
+
 		if testhelper.CheckExpErr(t, err, tc) && err == nil {
 			testhelper.DiffString(t, tc.IDStr(), "semver string",
 				sv.String(), tc.expSVString)
@@ -253,6 +256,7 @@ func TestIncr(t *testing.T) {
 	prID := "Pre-Rel-ID"
 	bID := "Build-ID"
 	sv, err := semver.NewSV(major, minor, patch, []string{prID}, []string{bID})
+
 	if err != nil {
 		t.Fatal("Couldn't create the new semver: ", err)
 	}
@@ -286,6 +290,7 @@ func TestIncr(t *testing.T) {
 		sv.CopyInto(localSV)
 
 		tc.incrFunc(localSV)
+
 		if !semver.Equals(localSV, tc.svExpected) {
 			t.Log(tc.IDStr())
 			t.Logf("\t: expected: %s", tc.svExpected)
@@ -297,18 +302,21 @@ func TestIncr(t *testing.T) {
 
 func TestAllBadStrings(t *testing.T) {
 	const fname = "testdata/badSemVers"
+
 	file, err := os.Open(fname)
 	if err != nil {
 		t.Fatal("Cannot open the test file: ", fname, " - ", err)
 	}
 
-	scanner := bufio.NewScanner(file)
 	lineNum := 0
+
+	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		parts := strings.SplitN(scanner.Text(), "\t", 2)
 		if len(parts) != 2 {
 			continue
 		}
+
 		svStr, expectedErr := parts[0], strings.TrimSpace(parts[1])
 
 		_, err := semver.ParseSV(svStr)
@@ -321,6 +329,7 @@ func TestAllBadStrings(t *testing.T) {
 
 func TestAllGoodStrings(t *testing.T) {
 	const fname = "testdata/goodSemVers"
+
 	file, err := os.Open(fname)
 	if err != nil {
 		t.Fatal("Cannot open the test file: ", fname, " - ", err)
@@ -328,7 +337,9 @@ func TestAllGoodStrings(t *testing.T) {
 
 	scanner := bufio.NewScanner(file)
 	lineNum := 0
+
 	var prevSV *semver.SV
+
 	for scanner.Scan() {
 		svStr := scanner.Text()
 		if svStr == "" {
@@ -339,17 +350,21 @@ func TestAllGoodStrings(t *testing.T) {
 		if err != nil {
 			t.Logf("parsing: %s:%d : %s", fname, lineNum, svStr)
 			t.Errorf("\t: unexpected error: %s", err)
+
 			continue
 		}
+
 		if prevSV != nil {
 			if semver.Less(sv, prevSV) {
 				t.Logf("checking order: %s:%d", fname, lineNum)
 				t.Logf("\t:     this: %s", svStr)
 				t.Logf("\t: previous: %s", prevSV)
 				t.Errorf("\t: this should not be less than the previous value")
+
 				continue
 			}
 		}
+
 		prevSV = sv
 	}
 }

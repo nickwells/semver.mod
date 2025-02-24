@@ -60,6 +60,7 @@ func CheckBuildID(id string) error {
 	if !idRE.MatchString(id) {
 		return errors.New("the Build ID: '" + id + "' must be " + GoodIDDesc)
 	}
+
 	return nil
 }
 
@@ -71,11 +72,14 @@ func CheckPreRelID(id string) error {
 			return errors.New("the Pre-Rel ID: '" + id +
 				"' must have no leading zero if it's all numeric")
 		}
+
 		return nil
 	}
+
 	if !idRE.MatchString(id) {
 		return errors.New("the Pre-Rel ID: '" + id + "' must be " + GoodIDDesc)
 	}
+
 	return nil
 }
 
@@ -87,6 +91,7 @@ func CheckAllPreRelIDs(ids []string) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -98,6 +103,7 @@ func CheckAllBuildIDs(ids []string) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -106,6 +112,7 @@ func (sv SV) Check() error {
 	if err := CheckAllPreRelIDs(sv.preRelIDs); err != nil {
 		return err
 	}
+
 	if err := CheckAllBuildIDs(sv.buildIDs); err != nil {
 		return err
 	}
@@ -154,6 +161,7 @@ func NewSVOrPanic(major, minor, patch int, prIDs, buildIDs []string) *SV {
 	if err != nil {
 		panic(err)
 	}
+
 	return sv
 }
 
@@ -166,6 +174,7 @@ func CheckRules(ids []string, checks []check.ValCk[[]string]) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -191,9 +200,11 @@ func NewSVWithIDRules(major, minor, patch int,
 	if err := sv.Check(); err != nil {
 		return nil, err
 	}
+
 	if err := CheckRules(prIDs, prIDRules); err != nil {
 		return nil, err
 	}
+
 	if err := CheckRules(buildIDs, bIDRules); err != nil {
 		return nil, err
 	}
@@ -213,6 +224,7 @@ func NewSVWithIDRulesOrPanic(major, minor, patch int,
 	if err != nil {
 		panic(err)
 	}
+
 	return sv
 }
 
@@ -414,6 +426,7 @@ func (sv *SV) SetPreRelIDs(ids []string) error {
 	}
 
 	sv.preRelIDs = ids
+
 	return nil
 }
 
@@ -430,5 +443,6 @@ func (sv *SV) SetBuildIDs(ids []string) error {
 	}
 
 	sv.buildIDs = ids
+
 	return nil
 }

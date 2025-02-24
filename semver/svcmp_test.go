@@ -21,6 +21,7 @@ func TestLess(t *testing.T) {
 		v210    = semver.NewSVOrPanic(2, 1, 0, nil, nil)
 		v211    = semver.NewSVOrPanic(2, 1, 1, nil, nil)
 	)
+
 	testCases := []struct {
 		testhelper.ID
 		a, b         *semver.SV
@@ -161,10 +162,13 @@ func setBuildIDs(t *testing.T, sv *semver.SV, buildIDs []string) {
 func TestEquals(t *testing.T) {
 	baseSV := semver.NewSVOrPanic(1, 2, 3,
 		[]string{"a", "b"}, []string{"a", "b"})
+
 	var svCopies [10]semver.SV
+
 	for i := range svCopies {
 		baseSV.CopyInto(&svCopies[i])
 	}
+
 	(&svCopies[1]).IncrMajor()
 	(&svCopies[2]).IncrMinor()
 	(&svCopies[3]).IncrPatch()
@@ -201,15 +205,16 @@ func TestEquals(t *testing.T) {
 			if tc.expEqual {
 				continue
 			}
+
 			t.Log(tc.IDStr())
 			t.Logf("\t: %s", baseSV)
 			t.Logf("\t: %s", tc.sv)
 			t.Errorf("\t: were not expected to be equal\n")
 		} else {
-
 			if !tc.expEqual {
 				continue
 			}
+
 			t.Log(tc.IDStr())
 			t.Logf("\t: %s", baseSV)
 			t.Logf("\t: %s", tc.sv)
