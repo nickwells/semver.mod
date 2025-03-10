@@ -255,8 +255,8 @@ func TestIncr(t *testing.T) {
 	patch := 3
 	prID := "Pre-Rel-ID"
 	bID := "Build-ID"
-	sv, err := semver.NewSV(major, minor, patch, []string{prID}, []string{bID})
 
+	sv, err := semver.NewSV(major, minor, patch, []string{prID}, []string{bID})
 	if err != nil {
 		t.Fatal("Couldn't create the new semver: ", err)
 	}
