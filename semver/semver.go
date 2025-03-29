@@ -10,6 +10,8 @@ import (
 	"github.com/nickwells/check.mod/v2/check"
 )
 
+// These constants provide consistent text values to describe semantic
+// version IDs and parts of them.
 const (
 	Name           = "semantic version ID"
 	Names          = "semantic version IDs"
