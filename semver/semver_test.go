@@ -123,6 +123,7 @@ func TestNewSV(t *testing.T) {
 
 func TestParse(t *testing.T) {
 	const badSemVer = "bad " + semver.Name
+
 	testCases := []struct {
 		testhelper.ID
 		testhelper.ExpErr
