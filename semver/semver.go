@@ -13,6 +13,8 @@ import (
 // These constants provide consistent text values to describe semantic
 // version IDs and parts of them.
 const (
+	ShortName      = "semver-ID"
+	ShortNames     = "semver-IDs"
 	Name           = "semantic version ID"
 	Names          = "semantic version IDs"
 	GoodIDDesc     = "a non-empty string of letters, digits or hyphens"
