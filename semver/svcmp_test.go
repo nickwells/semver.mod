@@ -166,7 +166,7 @@ func TestEquals(t *testing.T) {
 	var svCopies [10]semver.SV
 
 	for i := range svCopies {
-		baseSV.CopyInto(&svCopies[i])
+		baseSV.CopyInto(&svCopies[i]) //nolint:gosec
 	}
 
 	(&svCopies[1]).IncrMajor()
